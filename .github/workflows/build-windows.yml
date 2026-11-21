@@ -41,7 +41,7 @@ jobs:
           python -c "import PySide6, PyInstaller; print('PySide6', PySide6.__version__, 'PyInstaller', PyInstaller.__version__)"
 
       - name: Build Windows executable
-        shell: pwwsh
+        shell: pwsh
         working-directory: payload/source/DeepSeekCleaner
         run: |
           python -m PyInstaller --noconfirm --clean --log-level DEBUG build_win.spec *> "$env:GITHUB_WORKSPACE/build-pyinstaller.log"
@@ -51,7 +51,7 @@ jobs:
 
       - name: Capture build failure details
         if: failure()
-        shell: pwwsh
+        shell: pwsh
         run: |
           $out = Join-Path $env:GITHUB_WORKSPACE "build-debug.txt"
           "=== environment ===" | Set-Content $out
