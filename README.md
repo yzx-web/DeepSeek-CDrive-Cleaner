@@ -1,40 +1,56 @@
 <div align="center">
 
+<img src="assets/icon_256.png" width="96" alt="DeepSeek v4.1 C盘清理专家" />
+
 # DeepSeek v4.1 C盘清理专家
 
-**一款不吓人、不偷删、看得懂的 Windows C 盘清理工具。**
+**先看清，再决定。删错了，还能从回收站拿回来。**
+
+Windows 10 / 11 64 位 · 免安装单文件 · 约 26 MB
 
 **由 DeepSeek v4.1 Flash Max 制作**
 
-8 类垃圾扫描 · 大文件体检 · 清理记录 · 回收站可撤销删除 · 玻璃质感双主题
-
 ![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011%2064--bit-0078D4?logo=windows&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
-![Qt](https://img.shields.io/badge/UI-PySide6%20%2F%20Qt%206-41CD52?logo=qt&logoColor=white)
-![EXE](https://img.shields.io/badge/EXE-26%20MB-6E56CF)
+![Qt](https://img.shields.io/badge/UI-PySide6%20%2F%20Qt%206-41CD52?logo=qt)
+![Release](https://img.shields.io/github/v/release/yzx-web/DeepSeek-CDrive-Cleaner?color=6E56CF&label=Release)
+![Downloads](https://img.shields.io/github/downloads/yzx-web/DeepSeek-CDrive-Cleaner/total?color=6E56CF&label=Downloads)
 
-[![Download](https://img.shields.io/badge/Download-v4.1.0-6E56CF?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/yzx-web/DeepSeek-CDrive-Cleaner/releases/latest)
+<br />
+
+<a href="https://github.com/yzx-web/DeepSeek-CDrive-Cleaner/releases/latest">
+  <img src="https://img.shields.io/badge/下载-Windows%20单文件版-6E56CF?style=for-the-badge&logo=windows&logoColor=white" alt="下载 Windows 单文件版" />
+</a>
+<a href="https://github.com/yzx-web/DeepSeek-CDrive-Cleaner">
+  <img src="https://img.shields.io/badge/查看-完整源码-181717?style=for-the-badge&logo=github&logoColor=white" alt="查看完整源码" />
+</a>
 
 </div>
 
-> **非官方说明**：本项目是第三方工具，与 DeepSeek 官方及其关联公司无任何关系，也未获得其认可或背书。名称中的 “DeepSeek” 仅作为项目代号。
+> **非官方说明**：本项目是第三方工具，与 DeepSeek 官方及其关联公司无任何关系，也未获得其认可或背书。名称中的“DeepSeek”仅作为项目代号。
 
-## 这是什么
+## 为什么值得一试
 
-一个把 C 盘清理做得更“可控”的 Windows 小工具：先扫描、再勾选、最后确认，所有删除都进入系统回收站。它不会替你永久删除任何东西，也不会联网上传文件路径。
+| 删除可撤销 | 清理看得见 | 运行不打扰 |
+| :--- | :--- | :--- |
+| 所有正常清理都进入 Windows 回收站，误删也能还原。 | 8 类垃圾逐项列出文件数、体积和用途，默认只勾选低风险项。 | 不联网、不上传路径、不弹广告、不捆绑安装。 |
 
-界面采用 iOS 控制中心风格的毛玻璃，提供奶油浅色与深紫深色两套主题；玻璃按钮带高光、厚度阴影、渐变和细腻纹理，像可以按下去的真实按键。
+它不是“一键加速大师”，也不会替你永久删除任何东西。它更像一张 C 盘体检表：先扫清楚，把决定权留给你。
 
 ## 界面预览
 
-<p align="center">
-  <img src="docs/images/dashboard.png" width="49%" alt="仪表盘" />
-  <img src="docs/images/cleaner.png" width="49%" alt="垃圾清理" />
-</p>
+| 仪表盘 | 垃圾清理 |
+| :---: | :---: |
+| <img src="docs/images/dashboard.png" alt="仪表盘" /> | <img src="docs/images/cleaner.png" alt="垃圾清理" /> |
+| 环形空间仪表、健康度与空间去向 | 8 类彩色卡片、逐项勾选与释放摘要 |
 
-## 下载
+界面采用 iOS 控制中心风格的毛玻璃：奶油浅色与深紫深色双主题，240px 玻璃侧栏、带高光与厚度阴影的玻璃按钮，以及一套手绘线性图标。
 
-前往 **[Releases](https://github.com/yzx-web/DeepSeek-CDrive-Cleaner/releases/latest)** 下载 `DeepSeek-v4.1-CDrive-Cleaner.zip`。
+## 下载与安装
+
+前往 **[Releases](https://github.com/yzx-web/DeepSeek-CDrive-Cleaner/releases/latest)** 下载 `DeepSeek-v4.1-CDrive-Cleaner.zip`，或直接下载当前版本：
+
+**[DeepSeek-v4.1-CDrive-Cleaner.zip](https://github.com/yzx-web/DeepSeek-CDrive-Cleaner/releases/download/v4.1.0/DeepSeek-v4.1-CDrive-Cleaner.zip)**
 
 压缩包内包含：
 
@@ -48,23 +64,38 @@
 >
 > **SHA-256**：`36c4921c2d0def64b0c145595b2f9f79472c1567325a72c2a75a96e3c8dba6b0`
 
-## 功能
+## 30 秒了解
 
-- **8 类垃圾扫描**：临时文件、回收站、Windows 更新缓存、缩略图、预取文件、浏览器缓存、系统日志与转储、大文件。
-- **透明可控**：每一类都显示文件数、体积与用途；默认只勾选低风险类别，回收站与大文件不擅自处理。
-- **大文件体检**：只列出超过 500MB 的文件，默认不勾选；可按类型、日期、大小筛选。
-- **清理记录**：累计释放、次数、平均释放、跳过原因；可导出 TXT 报告到桌面。
-- **系统集成**：系统托盘、开机自启、清理后 60 秒倒计时关机、每周日 10:00 提醒。
-- **双主题玻璃界面**：自动 / 浅色 / 深色，240px 玻璃侧栏、环形空间仪表盘、自定义手绘图标。
+| 能力 | 你会得到什么 |
+| :--- | :--- |
+| **8 类垃圾扫描** | 临时文件、回收站、Windows 更新缓存、缩略图、预取文件、浏览器缓存、系统日志与转储、大文件。 |
+| **透明可控** | 每一类都显示文件数、体积与用途；默认只勾选低风险类别，回收站与大文件不擅自处理。 |
+| **大文件体检** | 只列出超过 500MB 的文件，默认不勾选；可按类型、日期、大小筛选。 |
+| **清理记录** | 累计释放、次数、平均释放、跳过原因；可导出 TXT 报告到桌面。 |
+| **系统集成** | 系统托盘、开机自启、清理后 60 秒倒计时关机、每周日 10:00 提醒。 |
+| **双主题玻璃界面** | 自动 / 浅色 / 深色，240px 玻璃侧栏、环形空间仪表盘、自定义手绘图标。 |
+
+## 清理范围与默认策略
+
+| 类别 | 清理什么 | 默认 |
+| :--- | :--- | :---: |
+| 临时文件 | 系统与应用的中转文件，关闭软件后基本无用 | ✅ 勾选 |
+| Windows 更新缓存 | 已安装完成的更新安装包，需要时会重新下载 | ✅ 勾选 |
+| 缩略图缓存 | 图片与视频预览小图，下次浏览会自动重建 | ✅ 勾选 |
+| 预取文件 | Windows 启动加速缓存，删除后下次启动可能慢几秒 | ✅ 勾选 |
+| 日志与转储 | 已写完的系统日志和崩溃记录，正在写入的自动跳过 | ✅ 勾选 |
+| 浏览器缓存 | 只清网页缓存与 GPU 缓存，不碰密码、Cookie、书签、历史 | ⬜ 手动勾选 |
+| 大文件体检 | C 盘用户目录中超过 500MB 的文件，逐项确认后才处理 | ⬜ 手动勾选 |
+| 回收站 | 只统计大小并提醒，不代替用户在系统中清空 | 👁 仅统计 |
 
 ## 安全底线
 
-- 所有正常清理都通过 `send2trash` 调用 Windows `IFileOperation`，进入回收站，可撤销。
-- 清理前必须手动勾选并二次确认；不会静默删除。
-- 路径经过 realpath、白名单、用户资料目录、AppData 根目录、敏感文件名多重校验。
-- 回收站类别只统计与提醒，不代用户永久清空。
-- 不联网、不上传文件路径；设置与历史只保存在 `%APPDATA%\DeepSeekCleaner`。
-- 日常扫描以普通权限运行，只有用户主动点击“以管理员身份重新启动”时才触发 UAC。
+1. **删除可逆**：所有正常清理都通过 `send2trash` 调用 Windows `IFileOperation`，进入回收站，可撤销。
+2. **绝不静默删除**：清理前必须手动勾选并二次确认；回收站类别只统计，不代用户永久清空。
+3. **路径多重校验**：realpath、白名单、用户资料目录、AppData 根目录、敏感文件名逐层检查。
+4. **失败不假装成功**：无权限、正在使用或被保护的文件会跳过，并在结果中说明原因。
+5. **本地运行**：不联网、不上传文件路径；设置与历史只保存在 `%APPDATA%\DeepSeekCleaner`。
+6. **权限克制**：日常扫描以普通权限运行，只有用户主动点击“以管理员身份重新启动”时才触发 UAC。
 
 ## 快速开始
 
@@ -72,6 +103,26 @@
 2. 双击 `DeepSeek v4.1 C盘清理专家.exe`。
 3. 在“垃圾清理”点“开始扫描”，或先到“大文件体检”看看谁在占空间。
 4. 勾选你想处理的类别，确认后清理；完成后可打开回收站复核。
+
+## 常见问题
+
+**Q：会不会误删我的照片、文档或程序？**  
+A：默认只勾选临时文件、更新缓存、缩略图、预取文件和旧日志；浏览器缓存、大文件需要你手动勾选。所有删除进入回收站，不直接永久删除。
+
+**Q：清理后怎么恢复？**  
+A：打开 Windows 回收站，找到对应文件右键“还原”即可。回收站类别本身只做统计，需要你亲自在系统中确认后再清空。
+
+**Q：需要管理员权限吗？**  
+A：日常扫描普通权限即可。部分系统缓存或日志可能需要管理员权限；程序会在普通权限下跳过并记录，不会假装清理成功。
+
+**Q：为什么叫“DeepSeek”？是官方产品吗？**  
+A：不是。名称仅作为项目代号，本项目为第三方工具，与 DeepSeek 官方无关联、未获背书。
+
+**Q：会上传我的文件路径或使用数据吗？**  
+A：不会。程序不联网，设置与清理历史只保存在本机 `%APPDATA%\DeepSeekCleaner`。
+
+**Q：支持 32 位 Windows 吗？**  
+A：当前仅提供 Windows 10 / 11 64 位版本。
 
 ## 从源码运行
 
@@ -132,3 +183,13 @@ app.manifest         asInvoker + PerMonitorV2 清单
 Copyright © 2026. All rights reserved.
 
 本仓库公开用于查看、下载与个人使用；未附带 OSI 开源许可证，未授权再分发、商用或二次发布。如需授权，请先联系作者。
+
+---
+
+<div align="center">
+
+**如果这个项目对你有用，欢迎点一个 Star，让更多人看到它。**
+
+[⬆ 回到顶部](#deepseek-v41-c盘清理专家)
+
+</div>
