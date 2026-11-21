@@ -38,11 +38,40 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r "payload/source/DeepSeekCleaner/requirements.txt"
           python -m pip install "pyinstaller==6.16.0"
+          python -c "import PySide6, PyInstaller; print('PySide6', PySide6.__version__, 'PyInstaller', PyInstaller.__version__)"
 
       - name: Build Windows executable
         shell: pwsh
         working-directory: payload/source/DeepSeekCleaner
-        run: pyinstaller --noconfirm --clean build_win.spec
+        run: |
+          python -m PyInstaller --noconfirm --clean --log-level DEBUG build_win.spec *> "$env:GITHUB_WORKSPACE/build-pyinstaller.log"
+          $code = $LASTEXITCODE
+          Get-Content "$env:GITHUB_WORKSPACE/build-pyinstaller.log" -Tail 60
+          exit $code
+
+      - name: Capture build failure details
+        if: failure()
+        shell: pwsh
+        run: |
+          $out = Join-Path $env:GITHUB_WORKSPACE "build-debug.txt"
+          "=== environment ===" | Set-Content $out
+          python --version *>> $out
+          "=== packages ===" | Out-File -Append $out
+          python -c "import PySide6; print('PySide6', PySide6.__version__)" *>> $out
+          python -c "import PyInstaller; print('PyInstaller', PyInstaller.__version__)" *>> $out
+          python -m pip show pyinstaller PySide6-Essentials *>> $out
+          "=== pyinstaller log (tail 300) ===" | Out-File -Append $out
+          if (Test-Path (Join-Path $env:GITHUB_WORKSPACE "build-pyinstaller.log")) {
+            Get-Content (Join-Path $env:GITHUB_WORKSPACE "build-pyinstaller.log") -Tail 300 | Out-File -Append $out
+          }
+          "=== dist ===" | Out-File -Append $out
+          if (Test-Path "payload/source/DeepSeekCleaner/dist") { Get-ChildItem "payload/source/DeepSeekCleaner/dist" -Recurse | Out-File -Append $out }
+          Get-Content $out
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build-debug.txt
+          git commit -m "[debug] Capture Windows build failure"
+          git push origin HEAD:main
 
       - name: Assemble release folder
         shell: pwsh
