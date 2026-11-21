@@ -1,0 +1,56 @@
+name: Publish Windows Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: ${{ !contains(github.event.head_commit.message, '[auto-assets]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download and verify package
+        env:
+          PACKAGE_URL: https://aka.doubaocdn.com/s/0v7vyG062O
+          PACKAGE_SHA256: 36c4921c2d0def64b0c145595b2f9f79472c1567325a72c2a75a96e3c8dba6b0
+        run: |
+          curl -L --fail --retry 3 --retry-delay 3 "$PACKAGE_URL" -o /tmp/deepseek-cleaner.zip
+          echo "$PACKAGE_SHA256  /tmp/deepseek-cleaner.zip" | sha256sum -c -
+
+      - name: Sync source, previews and docs
+        run: |
+          rm -rf /tmp/deepseek-pkg
+          unzip -q /tmp/deepseek-cleaner.zip -d /tmp/deepseek-pkg
+          SRC="/tmp/deepseek-pkg/DeepSeek v4.1 C盘清理专家/源码/DeepSeekCleaner"
+          cp -r "$SRC/." .
+          mkdir -p docs/images
+          cp "/tmp/deepseek-pkg/DeepSeek v4.1 C盘清理专家/界面预览/01-仪表盘.png" docs/images/dashboard.png
+          cp "/tmp/deepseek-pkg/DeepSeek v4.1 C盘清理专家/界面预览/02-垃圾清理.png" docs/images/cleaner.png
+          cp "/tmp/deepseek-pkg/DeepSeek v4.1 C盘清理专家/使用说明.txt" docs/使用说明.txt
+          cp "/tmp/deepseek-pkg/DeepSeek v4.1 C盘清理专家/文件校验.txt" docs/文件校验.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: sync source and previews [auto-assets]"
+            git push
+          fi
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mv /tmp/deepseek-cleaner.zip "/tmp/DeepSeek-v4.1-CDrive-Cleaner.zip"
+          if gh release view v4.1.0 >/dev/null 2>&1; then
+            gh release edit v4.1.0 --title "DeepSeek v4.1 C盘清理专家 · v4.1.0" --notes-file RELEASE_NOTES.md --latest
+          else
+            gh release create v4.1.0 --title "DeepSeek v4.1 C盘清理专家 · v4.1.0" --notes-file RELEASE_NOTES.md --latest
+          fi
+          gh release upload v4.1.0 "/tmp/DeepSeek-v4.1-CDrive-Cleaner.zip" --clobber
