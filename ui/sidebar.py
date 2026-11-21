@@ -11,11 +11,10 @@ from PySide6.QtGui import (QColor, QFont, QFontMetrics, QLinearGradient, QPainte
 from PySide6.QtWidgets import (QAbstractButton, QHBoxLayout, QLabel, QSizePolicy,
                                QVBoxLayout, QWidget)
 
-from ui.glass import (GlassButton, GlassCard, IconButton, Label, Separator, draw_glass,
-                      draw_shadow, format_size)
+from ui.glass import (GlassCard, IconButton, Label, Separator, draw_glass,
+                      draw_shadow)
 from ui.icons import Glyph, LogoMark, draw_glyph
 from ui.theme import RADIUS, SPACE, ThemeManager, app_font, tint
-from scanner import DiskStats, get_disk_stats
 
 
 NAV_ITEMS = [
@@ -148,119 +147,6 @@ class NavItem(QAbstractButton):
             p.drawEllipse(QRectF(self.width() - 23, self.height() / 2 - 2.5, 5, 5))
 
 
-class SpaceMeter(QWidget):
-    """侧栏里的 6px 空间占用条，颜色随健康度变化。"""
-
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
-        super().__init__(parent)
-        self.tm = ThemeManager.instance()
-        self.ratio = 0.0
-        self.setFixedHeight(6)
-        self.tm.changed.connect(self.update)
-
-    def set_ratio(self, ratio: float) -> None:
-        self.ratio = max(0.0, min(1.0, ratio))
-        self.update()
-
-    def paintEvent(self, event) -> None:  # noqa: N802
-        t = self.tm.theme
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        r = QRectF(self.rect()).adjusted(0, 0, 0, 0)
-        p.setBrush(QColor(255, 255, 255, 34 if t.is_dark else 95))
-        p.setPen(Qt.PenStyle.NoPen)
-        p.drawRoundedRect(r, 3, 3)
-        if self.ratio <= 0:
-            return
-        color = t.accent
-        if self.ratio >= 0.9:
-            color = t.coral
-        elif self.ratio >= 0.78:
-            color = t.orange
-        elif self.ratio < 0.62:
-            color = t.mint
-        fill = QRectF(r.left(), r.top(), max(6, r.width() * self.ratio), r.height())
-        grad = QLinearGradient(fill.topLeft(), fill.topRight())
-        grad.setColorAt(0, color.lighter(112))
-        grad.setColorAt(1, color)
-        p.setBrush(grad)
-        p.drawRoundedRect(fill, 3, 3)
-
-
-class SidebarSpaceCard(GlassCard):
-    """C 盘空间概览：让侧栏空白变成实时信息。"""
-
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
-        super().__init__(parent, radius=14, padding=11, shadow=False, glow=False)
-        self.tm = ThemeManager.instance()
-        self.setFixedHeight(86)
-        self.layout_.setSpacing(4)
-        top = QHBoxLayout()
-        top.setContentsMargins(0, 0, 0, 0)
-        top.setSpacing(6)
-        icon = Glyph("disk", QColor(self.tm.theme.cyan), 14, 1.4, self)
-        top.addWidget(icon)
-        top.addWidget(Label("C 盘空间", 10, QFont.Weight.DemiBold, parent=self))
-        top.addStretch(1)
-        self.state = Label("读取中", 9, QFont.Weight.DemiBold, color=self.tm.theme.faint,
-                           parent=self)
-        top.addWidget(self.state)
-        self.layout_.addLayout(top)
-        self.meter = SpaceMeter(self)
-        self.layout_.addWidget(self.meter)
-        bottom = QHBoxLayout()
-        bottom.setContentsMargins(0, 0, 0, 0)
-        bottom.setSpacing(4)
-        self.percent = Label("—", 9, QFont.Weight.DemiBold, parent=self, numeric=True,
-                             color=self.tm.theme.subtext)
-        bottom.addWidget(self.percent)
-        bottom.addStretch(1)
-        self.free = Label("等待读取", 8, QFont.Weight.Normal, color=self.tm.theme.faint,
-                          parent=self)
-        bottom.addWidget(self.free)
-        self.layout_.addLayout(bottom)
-        self.set_stats(get_disk_stats())
-        self.tm.changed.connect(self._sync_theme)
-
-    def _sync_theme(self, *_args) -> None:
-        self.meter.update()
-        if hasattr(self, "_disk"):
-            self.set_stats(self._disk)
-        else:
-            self._paint_texts()
-
-    def set_stats(self, disk: DiskStats) -> None:
-        self._disk = disk
-        if not disk.total:
-            self.meter.set_ratio(0)
-            self.percent.setText("—")
-            self.free.setText("等待读取")
-            self.state.setText("读取中")
-            self._state_color = self.tm.theme.faint
-            self._paint_texts()
-            return
-        ratio = disk.used / disk.total
-        self.meter.set_ratio(ratio)
-        self.percent.setText(f"{ratio * 100:.0f}% 已用")
-        self.free.setText(f"可用 {format_size(disk.free)}")
-        if ratio >= 0.9:
-            self.state.setText("偏满")
-            self._state_color = self.tm.theme.coral
-        elif ratio >= 0.78:
-            self.state.setText("偏重")
-            self._state_color = self.tm.theme.orange
-        else:
-            self.state.setText("良好")
-            self._state_color = self.tm.theme.mint
-        self._paint_texts()
-
-    def _paint_texts(self) -> None:
-        color = getattr(self, "_state_color", self.tm.theme.faint)
-        self.state.setStyleSheet(f"color: {color.name()}; background: transparent;")
-        self.percent.setStyleSheet(f"color: {self.tm.theme.subtext.name()}; background: transparent;")
-        self.free.setStyleSheet(f"color: {self.tm.theme.faint.name()}; background: transparent;")
-
-
 class Sidebar(QWidget):
     nav_changed = Signal(str)
     quit_requested = Signal()
@@ -360,18 +246,6 @@ class Sidebar(QWidget):
             self._buttons[key] = item
             nav_layout.addWidget(item)
         root.addWidget(nav_host)
-        root.addSpacing(14)
-
-        # 快速扫描：把侧栏的空白变成可用的动作
-        self.quick_scan = GlassButton("快速扫描", "primary", "sparkles", self, height=44)
-        self.quick_scan.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.quick_scan.clicked.connect(self.scan_requested)
-        root.addWidget(self.quick_scan)
-        root.addSpacing(10)
-
-        self.space_card = SidebarSpaceCard(self)
-        root.addWidget(self.space_card)
-        root.addSpacing(10)
         root.addStretch(1)
 
         # 小卡片：本周护理提醒

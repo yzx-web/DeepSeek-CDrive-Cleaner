@@ -27,9 +27,9 @@ class SettingRow(QWidget):
         self.tm = ThemeManager.instance()
         self.key = key
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, False)
-        self.setMinimumHeight(52)
+        self.setMinimumHeight(62)
         row = QHBoxLayout(self)
-        row.setContentsMargins(0, 3, 0, 3)
+        row.setContentsMargins(0, 6, 0, 6)
         row.setSpacing(10)
         col = QVBoxLayout()
         col.setSpacing(2)
@@ -62,7 +62,7 @@ class SettingRow(QWidget):
 
 class DangerCard(GlassCard):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
-        super().__init__(parent, radius=16, padding=14, shadow=True)
+        super().__init__(parent, radius=16, padding=18, shadow=True)
         self.tm = ThemeManager.instance()
 
     def paintEvent(self, event) -> None:  # noqa: N802
@@ -94,7 +94,7 @@ class SettingsPage(QWidget):
     def _build(self) -> None:
         root = QVBoxLayout(self)
         root.setContentsMargins(32, 8, 32, 22)
-        root.setSpacing(14)
+        root.setSpacing(16)
         self.header = PageHeader("设置",
                                  "把清理工具调成你顺手的样子。所有偏好都只保存在本机。",
                                  eyebrow="PREFERENCES")
@@ -109,7 +109,7 @@ class SettingsPage(QWidget):
         host = QWidget()
         host.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, False)
         body = QHBoxLayout(host)
-        body.setContentsMargins(0, 0, 4, 0)
+        body.setContentsMargins(0, 0, 4, 4)
         body.setSpacing(16)
         self.scroll.setWidget(host)
         root.addWidget(self.scroll, 1)
@@ -121,8 +121,8 @@ class SettingsPage(QWidget):
         body.addLayout(right, 1)
 
         # 外观
-        appearance = GlassCard(self, radius=16, padding=16, glow=True)
-        appearance.layout_.setSpacing(8)
+        appearance = GlassCard(self, radius=16, padding=18, glow=True)
+        appearance.layout_.setSpacing(10)
         appearance.layout_.addWidget(Label("外观", 18, QFont.Weight.Bold, parent=appearance,
                                            display=True))
         appearance.layout_.addWidget(Label("跟随系统，或选一个你今天喜欢的光。", 10,
@@ -135,13 +135,13 @@ class SettingsPage(QWidget):
         left.addWidget(appearance)
 
         # 行为
-        behavior = GlassCard(self, radius=16, padding=16)
-        behavior.layout_.setSpacing(1)
+        behavior = GlassCard(self, radius=16, padding=18)
+        behavior.layout_.setSpacing(4)
         behavior.layout_.addWidget(Label("行为", 18, QFont.Weight.Bold, parent=behavior,
                                          display=True))
         behavior.layout_.addWidget(Label("这些开关会改变软件“怎么陪着你”。", 10,
                                          color=self.tm.theme.muted, parent=behavior))
-        behavior.layout_.addSpacing(3)
+        behavior.layout_.addSpacing(4)
         self._rows: Dict[str, SettingRow] = {}
         definitions = [
             ("startup", "开机时安静启动", "登录 Windows 后在托盘里待命，不打扰你。"),
@@ -159,14 +159,14 @@ class SettingsPage(QWidget):
         left.addWidget(behavior)
 
         # 关于
-        about = GlassCard(self, radius=16, padding=16, glow=True)
-        about.layout_.setSpacing(7)
+        about = GlassCard(self, radius=16, padding=18, glow=True)
+        about.layout_.setSpacing(10)
         top = QHBoxLayout()
-        top.addWidget(LogoMark(34, about))
+        top.addWidget(LogoMark(40, about))
         name_col = QVBoxLayout()
-        name_col.setSpacing(0)
-        name_col.addWidget(Label("DeepSeek", 16, QFont.Weight.Bold, parent=about))
-        name_col.addWidget(Label("C盘清理专家 · v4.1.0", 10, QFont.Weight.Medium,
+        name_col.setSpacing(1)
+        name_col.addWidget(Label("DeepSeek", 17, QFont.Weight.Bold, parent=about))
+        name_col.addWidget(Label("C盘清理专家 · v4.1.2", 10, QFont.Weight.Medium,
                                 color=self.tm.theme.muted, parent=about))
         top.addLayout(name_col, 1)
         top.addWidget(Tag("本地模式", self.tm.theme.mint, about))
@@ -189,8 +189,8 @@ class SettingsPage(QWidget):
         left.addStretch(1)
 
         # 权限
-        security = GlassCard(self, radius=16, padding=14)
-        security.layout_.setSpacing(8)
+        security = GlassCard(self, radius=16, padding=18)
+        security.layout_.setSpacing(10)
         sec_head = QHBoxLayout()
         sec_head.addWidget(Label("安全与权限", 18, QFont.Weight.Bold, parent=security,
                                  display=True))
@@ -205,7 +205,7 @@ class SettingsPage(QWidget):
                                 color=self.tm.theme.faint, parent=security, line_height=1.4)
         security.layout_.addWidget(self.admin_text)
         self.admin_btn = GlassButton("以管理员身份重新启动", "secondary", "shield", security,
-                                     height=38)
+                                     height=40)
         self.admin_btn.clicked.connect(self.admin_relaunch_requested)
         security.layout_.addWidget(self.admin_btn)
         note = QLabel("UAC 会弹出 Windows 官方确认框；本软件不会绕过它。", security)
@@ -216,8 +216,8 @@ class SettingsPage(QWidget):
         right.addWidget(security)
 
         # 隐私
-        privacy = GlassCard(self, radius=16, padding=14, glow=True)
-        privacy.layout_.setSpacing(7)
+        privacy = GlassCard(self, radius=16, padding=18, glow=True)
+        privacy.layout_.setSpacing(9)
         privacy.layout_.addWidget(Label("隐私与数据", 18, QFont.Weight.Bold,
                                         parent=privacy, display=True))
         for icon, color, title, sub in [
@@ -249,12 +249,12 @@ class SettingsPage(QWidget):
 
         # 危险区
         danger = DangerCard(self)
-        danger.layout_.setSpacing(6)
+        danger.layout_.setSpacing(8)
         danger.layout_.addWidget(Label("危险区", 16, QFont.Weight.Bold, parent=danger,
                                        display=True))
         danger.layout_.addWidget(Label("清理的是工具的记忆，不会删除你的文件。",
                                        9, color=self.tm.theme.muted, parent=danger))
-        clear = GlassButton("清空清理记录", "danger", "trash", danger, height=36)
+        clear = GlassButton("清空清理记录", "danger", "trash", danger, height=38)
         clear.clicked.connect(self.clear_history_requested)
         danger.layout_.addWidget(clear)
         reset = GlassButton("恢复默认设置", "ghost", None, danger, height=34, compact=True)

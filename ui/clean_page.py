@@ -22,9 +22,8 @@ from ui.theme import ThemeManager, app_font, category_color, tint
 
 class CategoryIconBlock(QWidget):
     def __init__(self, icon: str, color: QColor, parent: Optional[QWidget] = None,
-                 size: int = 42) -> None:
+                 size: int = 46) -> None:
         super().__init__(parent)
-        self.tm = ThemeManager.instance()
         self.icon = icon
         self.color = QColor(color)
         self.selected = False
@@ -35,47 +34,45 @@ class CategoryIconBlock(QWidget):
         self.update()
 
     def paintEvent(self, event) -> None:  # noqa: N802
-        t = self.tm.theme
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         r = QRectF(1, 1, self.width() - 2, self.height() - 3)
         path = QPainterPath()
         path.addRoundedRect(r, 11, 11)
-        c = QColor(self.color)
-        glyph_color = QColor("#FFFFFF")
         if self.selected:
-            c1 = QColor(c).lighter(114 if t.is_dark else 111)
-            c2 = QColor(c).darker(124 if t.is_dark else 116)
             grad = QLinearGradient(r.topLeft(), r.bottomRight())
-            grad.setColorAt(0, c1)
-            grad.setColorAt(1, c2)
+            grad.setColorAt(0, QColor("#807DFF"))
+            grad.setColorAt(1, QColor("#C05DF4"))
             p.fillPath(path, grad)
-            glow = QColor(c)
-            glow.setAlpha(82 if t.is_dark else 50)
+            # 彩色柔光
+            glow = QColor(self.color)
+            glow.setAlpha(65)
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(glow)
-            p.drawEllipse(QRectF(r.left() + 3, r.bottom() - 11, r.width() - 6, 20))
+            p.drawEllipse(QRectF(r.left() + 4, r.bottom() - 12, r.width() - 8, 20))
         else:
-            p.fillPath(path, QColor(c.red(), c.green(), c.blue(), 34 if t.is_dark else 24))
-            p.setBrush(QColor(255, 255, 255, 22 if t.is_dark else 60))
-            p.setPen(Qt.PenStyle.NoPen)
-            p.drawEllipse(QRectF(r.right() - 20, r.top() - 4, 28, 28))
-            glyph_color = c
+            grad = QLinearGradient(r.topLeft(), r.bottomRight())
+            c = QColor(self.color)
+            c2 = QColor(c)
+            c2.setHsv(max(0, c.hsvHue() - 12), min(255, c.saturation() + 20),
+                      max(20, c.value() - 35))
+            grad.setColorAt(0, QColor(c.red(), c.green(), c.blue(), 210))
+            grad.setColorAt(1, QColor(c2.red(), c2.green(), c2.blue(), 205))
+            p.fillPath(path, grad)
+            p.setBrush(QColor(255, 255, 255, 20))
+            p.drawEllipse(QRectF(r.right() - 22, r.top() - 4, 30, 30))
         # 高光与描边
         p.save()
         p.setClipPath(path)
         gloss = QLinearGradient(r.topLeft(), QPointF(r.left(), r.center().y()))
-        gloss.setColorAt(0, QColor(255, 255, 255, 68 if self.selected else 30))
+        gloss.setColorAt(0, QColor(255, 255, 255, 72))
         gloss.setColorAt(1, QColor(255, 255, 255, 0))
         p.fillRect(r, gloss)
         p.restore()
         p.setBrush(Qt.BrushStyle.NoBrush)
-        p.setPen(QPen(QColor(255, 255, 255, 92 if self.selected else 45), 1))
+        p.setPen(QPen(QColor(255, 255, 255, 100), 1))
         p.drawPath(path)
-        box = 22 if self.width() >= 46 else 19
-        draw_glyph(p, self.icon,
-                   QRectF((self.width() - box) / 2, (self.height() - box) / 2, box, box),
-                   glyph_color, 1.55)
+        draw_glyph(p, self.icon, QRectF(13, 12, 21, 21), QColor("#FFFFFF"), 1.55)
 
 
 class CategoryCard(GlassCard):
@@ -83,31 +80,29 @@ class CategoryCard(GlassCard):
     recycle_clicked = Signal()
 
     def __init__(self, result: CategoryResult, parent: Optional[QWidget] = None) -> None:
-        super().__init__(parent, radius=16, padding=12, hover=True, shadow=True)
+        super().__init__(parent, radius=16, padding=14, hover=True, shadow=True)
         self.tm = ThemeManager.instance()
         self.result = result
         self.key = result.key
         self.color = category_color(self.tm.theme)[self.key]
         self._selected = result.defn.default_selected and not result.defn.protected
-        self.setMinimumHeight(144)
-        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        self.setMinimumHeight(156)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setToolTip(result.defn.tip)
 
         top = QHBoxLayout()
         top.setContentsMargins(0, 0, 0, 0)
-        top.setSpacing(10)
-        self.icon_block = CategoryIconBlock(result.defn.icon, self.color, self, 42)
+        top.setSpacing(12)
+        self.icon_block = CategoryIconBlock(result.defn.icon, self.color, self)
         self.icon_block.set_selected(self._selected)
         top.addWidget(self.icon_block, 0, Qt.AlignmentFlag.AlignTop)
         text_col = QVBoxLayout()
-        text_col.setSpacing(2)
-        self.title = Label(result.defn.title, 15, QFont.Weight.DemiBold, parent=self)
-        self.title.setWordWrap(False)
+        text_col.setSpacing(3)
+        self.title = Label(result.defn.title, 16, QFont.Weight.DemiBold, parent=self)
         text_col.addWidget(self.title)
         self.meta = Label(f"{self._display_count()} 项 · {format_size(result.total_size)}",
-                          10, QFont.Weight.DemiBold, color=self.tm.theme.subtext, parent=self,
+                          11, QFont.Weight.DemiBold, color=self.tm.theme.subtext, parent=self,
                           numeric=True)
-        self.meta.setWordWrap(False)
         text_col.addWidget(self.meta)
         top.addLayout(text_col, 1)
         if result.defn.protected:
@@ -115,14 +110,14 @@ class CategoryCard(GlassCard):
             self.protect_tag = Tag("已保护", self.tm.theme.muted, self, "lock")
             top.addWidget(self.protect_tag, 0, Qt.AlignmentFlag.AlignTop)
         else:
-            self.check = RoundCheck(self._selected, self.color, self, 20)
+            self.check = RoundCheck(self._selected, self.color, self)
             self.check.toggled.connect(self._on_check)
             top.addWidget(self.check, 0, Qt.AlignmentFlag.AlignTop)
         self.layout_.addLayout(top)
         desc = self.result.defn.description
         self.desc = Label(desc, 10, QFont.Weight.Normal, color=self.tm.theme.muted,
-                          parent=self, line_height=1.3)
-        self.desc.setMaximumHeight(32)
+                          parent=self, line_height=1.35)
+        self.desc.setMaximumHeight(36)
         self.layout_.addWidget(self.desc)
         bottom = QHBoxLayout()
         bottom.setContentsMargins(0, 0, 0, 0)
@@ -132,7 +127,7 @@ class CategoryCard(GlassCard):
                                    color=self.tm.theme.faint, parent=self))
         else:
             self.state_tag = Tag("将清理" if self._selected else "保留",
-                                 self.color if self._selected else self.tm.theme.muted,
+                                 self.tm.theme.accent if self._selected else self.tm.theme.muted,
                                  self, "check" if self._selected else None)
             bottom.addWidget(self.state_tag)
         bottom.addStretch(1)
@@ -141,25 +136,10 @@ class CategoryCard(GlassCard):
         bottom.addWidget(self.size_badge)
         self.layout_.addLayout(bottom)
         self.set_selected(self._selected, emit=False)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.tm.changed.connect(self._sync_theme)
-
-    def _sync_theme(self, *_args) -> None:
-        self.color = category_color(self.tm.theme)[self.key]
-        self.icon_block.color = QColor(self.color)
-        self.icon_block.update()
-        if self.check is not None:
-            self.check.checked_color = QColor(self.color)
-            self.check.update()
-        if hasattr(self, "state_tag"):
-            self.state_tag.color = self.color if self._selected else self.tm.theme.muted
-            self.state_tag.update()
-        self.update()
-
-    def resizeEvent(self, event) -> None:  # noqa: N802
-        super().resizeEvent(event)
-        if hasattr(self, "protect_tag"):
-            self.protect_tag.setVisible(self.width() >= 280)
+        if result.defn.protected:
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
+        else:
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def _display_count(self) -> int:
         if self.key == "recycle":
@@ -180,35 +160,13 @@ class CategoryCard(GlassCard):
             self.check.setVisible(True)
         if hasattr(self, "state_tag"):
             self.state_tag.text_value = "将清理" if selected else "保留"
-            self.state_tag.color = self.color if selected else self.tm.theme.muted
+            self.state_tag.color = self.tm.theme.accent if selected else self.tm.theme.muted
             self.state_tag.icon = "check" if selected else None
             self.state_tag.updateGeometry()
             self.state_tag.update()
         self.update()
         if emit:
             self.toggled.emit(self.key, selected)
-
-    def paintEvent(self, event) -> None:  # noqa: N802
-        super().paintEvent(event)
-        if self._selected:
-            p = QPainter(self)
-            p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-            tint_path = QPainterPath()
-            tint_path.addRoundedRect(QRectF(self.rect()).adjusted(1, 1, -1, -1),
-                                     self.radius, self.radius)
-            c = QColor(self.color)
-            c.setAlpha(46 if self.tm.theme.is_dark else 24)
-            wash = QLinearGradient(self.rect().topLeft(), self.rect().bottomRight())
-            wash.setColorAt(0, c)
-            fade = QColor(self.color)
-            fade.setAlpha(6)
-            wash.setColorAt(1, fade)
-            p.fillPath(tint_path, wash)
-            c.setAlpha(102 if self.tm.theme.is_dark else 82)
-            p.setBrush(Qt.BrushStyle.NoBrush)
-            p.setPen(QPen(c, 1.25))
-            p.drawRoundedRect(QRectF(self.rect()).adjusted(1, 1, -1, -1),
-                              self.radius, self.radius)
 
     def is_selected(self) -> bool:
         return self._selected
@@ -440,10 +398,9 @@ class CleanPage(QWidget):
     def _build_result(self) -> None:
         self.result_host = QWidget(self)
         self.result_host.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, False)
-        self.result_host.setMinimumWidth(0)
         self.result_root = QVBoxLayout(self.result_host)
         self.result_root.setContentsMargins(0, 0, 0, 0)
-        self.result_root.setSpacing(12)
+        self.result_root.setSpacing(14)
 
         # 顶部结果条
         self.banner = GlassCard(self.result_host, radius=14, padding=14, shadow=False)
@@ -476,13 +433,13 @@ class CleanPage(QWidget):
         self.grid = QGridLayout()
         self.grid.setContentsMargins(0, 0, 0, 0)
         self.grid.setHorizontalSpacing(12)
-        self.grid.setVerticalSpacing(10)
+        self.grid.setVerticalSpacing(12)
         left.addLayout(self.grid)
         left.addStretch(1)
 
         # 右侧摘要
-        self.summary = GlassCard(self.result_host, radius=18, padding=18, glow=True)
-        self.summary.setFixedWidth(300)
+        self.summary = GlassCard(self.result_host, radius=18, padding=20, glow=True)
+        self.summary.setFixedWidth(310)
         self.summary.layout_.setSpacing(8)
         self.summary.layout_.addWidget(Label("准备释放", 11, QFont.Weight.DemiBold,
                                              color=self.tm.theme.muted, parent=self.summary))
@@ -505,7 +462,7 @@ class CleanPage(QWidget):
                                    parent=self.summary)
         self.summary.layout_.addWidget(self.summary_sizes)
         self.summary.layout_.addSpacing(4)
-        self.clean_btn = GlassButton("立即清理", "cta", "clean", self.summary, height=50)
+        self.clean_btn = GlassButton("立即清理", "primary", "clean", self.summary, height=50)
         self.clean_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.clean_btn.clicked.connect(self._request_clean)
         self.summary.layout_.addWidget(self.clean_btn)
@@ -526,15 +483,6 @@ class CleanPage(QWidget):
         self.body.addWidget(self.result_host)
 
     # ------------------------------------------------------------------
-    def resizeEvent(self, event) -> None:  # noqa: N802
-        super().resizeEvent(event)
-        self._apply_responsive_width()
-
-    def _apply_responsive_width(self) -> None:
-        if not hasattr(self, "summary"):
-            return
-        self.summary.setFixedWidth(300 if self.width() >= 1000 else 260)
-
     def _show_empty(self) -> None:
         self.empty.show()
         self.scanning.hide()

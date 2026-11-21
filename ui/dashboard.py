@@ -281,20 +281,14 @@ class DashboardPage(QWidget):
         hour = dt.datetime.now().hour
         if hour < 6:
             greeting = "夜深了"
-            eyebrow = "NIGHT SHIFT"
         elif hour < 11:
             greeting = "早上好"
-            eyebrow = "GOOD MORNING"
         elif hour < 14:
             greeting = "中午好"
-            eyebrow = "GOOD NOON"
         elif hour < 18:
             greeting = "下午好"
-            eyebrow = "GOOD AFTERNOON"
         else:
             greeting = "晚上好"
-            eyebrow = "GOOD EVENING"
-        self.header.set_eyebrow(eyebrow)
         ratio = self.disk.used_ratio
         if ratio >= 0.9:
             phrase = "你的 C 盘需要一点紧急护理"
