@@ -26,7 +26,7 @@ jobs:
       - name: Download build payload
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://aka.doubaocdn.com/s/xUXURSYpkb" -OutFile "payload.zip"
+          Invoke-WebRequest -Uri "https://aka.doubaocdn.com/s/geBNHo0qHU" -OutFile "payload.zip"
 
       - name: Extract payload
         shell: pwsh
@@ -41,7 +41,7 @@ jobs:
           python -c "import PySide6, PyInstaller; print('PySide6', PySide6.__version__, 'PyInstaller', PyInstaller.__version__)"
 
       - name: Build Windows executable
-        shell: pwsh
+        shell: pwwsh
         working-directory: payload/source/DeepSeekCleaner
         run: |
           python -m PyInstaller --noconfirm --clean --log-level DEBUG build_win.spec *> "$env:GITHUB_WORKSPACE/build-pyinstaller.log"
@@ -51,7 +51,7 @@ jobs:
 
       - name: Capture build failure details
         if: failure()
-        shell: pwsh
+        shell: pwwsh
         run: |
           $out = Join-Path $env:GITHUB_WORKSPACE "build-debug.txt"
           "=== environment ===" | Set-Content $out
@@ -174,8 +174,7 @@ jobs:
       - name: Sync source previews and README back to repository
         shell: bash
         run: |
-          set -e
-          cp -R payload/source/DeepSeekCleaner/* .
+          rsync -a --exclude build --exclude dist --exclude __pycache__ payload/source/DeepSeekCleaner/ .
           mkdir -p docs/images
           cp payload/previews/01-*.png docs/images/dashboard.png
           cp payload/previews/02-*.png docs/images/cleaner.png
@@ -191,7 +190,7 @@ jobs:
           rm -f build-debug.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- build-debug.txt
+          git add -u -- build-debug.txt
           git add README.md app.manifest app_settings.py assets build_win.spec cleaner.py main.py report.py requirements.txt scanner.py system_utils.py ui version_info.txt docs
           if git diff --cached --quiet; then
             echo "No repository changes to commit"
