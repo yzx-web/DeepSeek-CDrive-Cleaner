@@ -24,12 +24,86 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Download build payload
+      - name: Download and extract payload
         shell: pwsh
         run: |
           $url = (Get-Content "payload_url.txt" -Raw).Trim()
           Invoke-WebRequest -Uri $url -OutFile "payload.zip"
+          Expand-Archive -Path "payload.zip" -DestinationPath "payload" -Force
 
-      - name: Extract payload
-        shell: pwwsh
-        run: Expand-Archive -Path "payload.zip" -DestinationPath "payload" -Force
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r "payload/source/DeepSeekCleaner/requirements.txt"
+          python -m pip install "pyinstaller==6.16.0"
+          python -c "import PySide6, PyInstaller; print('PySide6', PySide6.__version__, 'PyInstaller', PyInstaller.__version__)"
+
+      - name: Build executable
+        shell: pwsh
+        working-directory: payload/source/DeepSeekCleaner
+        run: |
+          python -m PyInstaller --noconfirm --clean build_win.spec
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Self-test executable
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:GITHUB_WORKSPACE "payload/source/DeepSeekCleaner/dist/DeepSeekCleaner.exe"
+          $p = Start-Process -FilePath $exe -ArgumentList "--selftest" -Wait -PassThru
+          $report = Join-Path $env:APPDATA "DeepSeekCleaner/selftest.json"
+          if (-not (Test-Path $report)) { throw "selftest.json not found" }
+          Get-Content $report
+          $json = Get-Content $report -Raw | ConvertFrom-Json
+          if (-not $json.ok) { throw "selftest failed: $($json.error)" }
+          if ($p.ExitCode -ne 0) { throw "selftest exit code $($p.ExitCode)" }
+
+      - name: Assemble release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $work = Join-Path $env:GITHUB_WORKSPACE "release"
+          $folderName = "DeepSeek v4.1 C盘清理专家"
+          $folder = Join-Path $work $folderName
+          New-Item -ItemType Directory -Force -Path $folder | Out-Null
+          New-Item -ItemType Directory -Force -Path (Join-Path $folder "界面预览") | Out-Null
+          New-Item -ItemType Directory -Force -Path (Join-Path $folder "源码") | Out-Null
+
+          $exe = Join-Path $env:GITHUB_WORKSPACE "payload/source/DeepSeekCleaner/dist/DeepSeekCleaner.exe"
+          Copy-Item $exe (Join-Path $folder "DeepSeek v4.1 C盘清理专家.exe")
+          Copy-Item "payload/docs/使用说明.txt" $folder
+          Copy-Item "payload/docs/更新说明-界面优化.txt" $folder
+          Copy-Item "payload/docs/软件介绍.md" $folder
+          Copy-Item "payload/docs/源码说明.md" (Join-Path $folder "源码")
+          Copy-Item "payload/docs/requirements-dev.txt" (Join-Path $folder "源码")
+          Copy-Item "payload/previews/*.png" (Join-Path $folder "界面预览")
+          Copy-Item "payload/source/DeepSeekCleaner" (Join-Path $folder "源码/DeepSeekCleaner") -Recurse
+          Get-ChildItem (Join-Path $folder "源码/DeepSeekCleaner") -Filter "__pycache__" -Recurse -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item (Join-Path $folder "源码/DeepSeekCleaner/build") -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item (Join-Path $folder "源码/DeepSeekCleaner/dist") -Recurse -Force -ErrorAction SilentlyContinue
+
+          $appExe = Join-Path $folder "DeepSeek v4.1 C盘清理专家.exe"
+          $hash = (Get-FileHash $appExe -Algorithm SHA256).Hash.ToLower()
+          $bytes = (Get-Item $appExe).Length
+          $mb = "{0:N1} MB" -f ($bytes / 1MB)
+          @(
+            "DeepSeek v4.1 C盘清理专家"
+            "版本：4.1.0"
+            "文件：DeepSeek v4.1 C盘清理专家.exe"
+            "大小：$mb（$bytes bytes）"
+            "SHA-256：$hash"
+          ) | Set-Content (Join-Path $folder "文件校验.txt") -Encoding utf8
+
+          $zip = Join-Path $work "DeepSeek-v4.1-CDrive-Cleaner.zip"
+          Compress-Archive -Path $folder -DestinationPath $zip -Force
+          "SHA256=$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "APP_SIZE=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_ZIP=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Upload release asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload v4.1.0 "$RELEASE_ZIP" --clobber
+          gh release edit v4.1.0 --notes-file payload/RELEASE_NOTES.md
