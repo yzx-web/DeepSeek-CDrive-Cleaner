@@ -4,6 +4,8 @@
 
 **一款不吓人、不偷删、看得懂的 Windows C 盘清理工具。**
 
+**由 DeepSeek v4.1 Flash Max 制作**
+
 8 类垃圾扫描 · 大文件体检 · 清理记录 · 回收站可撤销删除 · 玻璃质感双主题
 
 ![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011%2064--bit-0078D4?logo=windows&logoColor=white)
@@ -123,7 +125,9 @@ app.manifest         asInvoker + PerMonitorV2 清单
 - 回收站类别只做统计，不代替用户在系统里清空回收站。
 - 这是一个本地工具，不提供云端账号、同步或遥测。
 
-## 版权
+## 制作与版权
+
+本软件由 **DeepSeek v4.1 Flash Max** 制作。
 
 Copyright © 2026. All rights reserved.
 

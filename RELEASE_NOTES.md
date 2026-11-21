@@ -1,5 +1,7 @@
 ## DeepSeek v4.1 C盘清理专家 · v4.1.0
 
+> 制作：DeepSeek v4.1 Flash Max
+
 Windows 10 / 11 64 位单文件版。
 
 ### 本次包含
