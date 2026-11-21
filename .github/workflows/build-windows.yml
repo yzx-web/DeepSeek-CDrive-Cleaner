@@ -73,6 +73,18 @@ jobs:
           git commit -m "[debug] Capture Windows build failure"
           git push origin HEAD:main
 
+      - name: Run executable self-test
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:GITHUB_WORKSPACE "payload/source/DeepSeekCleaner/dist/DeepSeekCleaner.exe"
+          $p = Start-Process -FilePath $exe -ArgumentList "--selftest" -Wait -PassThru
+          $report = Join-Path $env:APPDATA "DeepSeekCleaner/selftest.json"
+          if (-not (Test-Path $report)) { throw "selftest.json not found" }
+          Get-Content $report
+          $json = Get-Content $report -Raw | ConvertFrom-Json
+          if (-not $json.ok) { throw "selftest failed: $($json.error)" }
+          if ($p.ExitCode -ne 0) { throw "selftest exit code $($p.ExitCode)" }
+
       - name: Assemble release folder
         shell: pwsh
         run: |
@@ -95,6 +107,10 @@ jobs:
 
           Copy-Item "payload/previews/*.png" (Join-Path $folder "界面预览")
           Copy-Item "payload/source/DeepSeekCleaner" (Join-Path $folder "源码/DeepSeekCleaner") -Recurse
+          Remove-Item (Join-Path $folder "源码/DeepSeekCleaner/build") -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item (Join-Path $folder "源码/DeepSeekCleaner/dist") -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item (Join-Path $folder "源码/DeepSeekCleaner/__pycache__") -Recurse -Force -ErrorAction SilentlyContinue
+          Get-ChildItem (Join-Path $folder "源码/DeepSeekCleaner") -Filter "__pycache__" -Recurse -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
           $appExe = Join-Path $folder "DeepSeek v4.1 C盘清理专家.exe"
           $hash = (Get-FileHash $appExe -Algorithm SHA256).Hash.ToLower()
@@ -172,8 +188,10 @@ jobs:
           cp payload/previews/09-*.png docs/images/history-light.png
           cp payload/previews/10-*.png docs/images/settings-light.png
           sed -e "s/__SHA256__/${SHA256}/g" -e "s/__SIZE__/${APP_SIZE}/g" payload/README.template.md > README.md
+          rm -f build-debug.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- build-debug.txt
           git add README.md app.manifest app_settings.py assets build_win.spec cleaner.py main.py report.py requirements.txt scanner.py system_utils.py ui version_info.txt docs
           if git diff --cached --quiet; then
             echo "No repository changes to commit"
