@@ -4,7 +4,7 @@
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a---          11/21/2026 11:27 AM       28056783 DeepSeekCleaner.exe
+-a---          11/21/2026 12:45 PM       27842398 DeepSeekCleaner.exe
 
 === payload docs ===
 
@@ -12,11 +12,11 @@ Mode                 LastWriteTime         Length Name
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a---          11/21/2026  5:59 PM             40 requirements-dev.txt
--a---          11/21/2026  5:59 PM           2367 使用说明.txt
--a---          11/21/2026  7:23 PM           1906 更新说明-界面优化.txt
--a---          11/21/2026  5:59 PM           2419 源码说明.md
--a---          11/21/2026  7:23 PM           1415 软件介绍.md
+-a---          11/21/2026  8:42 PM             40 requirements-dev.txt
+-a---          11/21/2026  8:43 PM           2431 使用说明.txt
+-a---          11/21/2026  8:43 PM           1813 更新说明-界面优化.txt
+-a---          11/21/2026  8:43 PM           1746 源码说明.md
+-a---          11/21/2026  8:43 PM           1426 软件介绍.md
 
 === payload previews ===
 
@@ -24,16 +24,16 @@ Mode                 LastWriteTime         Length Name
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a---          11/21/2026  7:23 PM         963727 01-仪表盘-深色.png
--a---          11/21/2026  7:24 PM        1039647 02-垃圾清理-深色.png
--a---          11/21/2026  7:24 PM         785241 03-大文件体检-深色.png
--a---          11/21/2026  7:24 PM         883203 04-清理记录-深色.png
--a---          11/21/2026  7:24 PM        1033632 05-设置-深色.png
--a---          11/21/2026  7:24 PM         768615 06-仪表盘-浅色.png
--a---          11/21/2026  7:24 PM         864547 07-垃圾清理-浅色.png
--a---          11/21/2026  7:24 PM         603501 08-大文件体检-浅色.png
--a---          11/21/2026  7:24 PM         684504 09-清理记录-浅色.png
--a---          11/21/2026  7:24 PM         847474 10-设置-浅色.png
+-a---          11/21/2026  8:42 PM         172624 01-仪表盘-深色.png
+-a---          11/21/2026  8:42 PM         201182 02-垃圾清理-深色.png
+-a---          11/21/2026  8:42 PM         110511 03-大文件体检-深色.png
+-a---          11/21/2026  8:42 PM         114873 04-清理记录-深色.png
+-a---          11/21/2026  8:42 PM         186262 05-设置-深色.png
+-a---          11/21/2026  8:42 PM         170147 06-仪表盘-浅色.png
+-a---          11/21/2026  8:42 PM         195851 07-垃圾清理-浅色.png
+-a---          11/21/2026  8:42 PM         106786 08-大文件体检-浅色.png
+-a---          11/21/2026  8:42 PM         112285 09-清理记录-浅色.png
+-a---          11/21/2026  8:42 PM         186189 10-设置-浅色.png
 
 === release tree ===
 
@@ -41,35 +41,35 @@ Mode                 LastWriteTime         Length Name
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d----          11/21/2026 11:27 AM                DeepSeek v4.1 C盘清理专家
--a---          11/21/2026 11:27 AM       36796813 DeepSeek-v4.1-CDrive-Cleaner.zip
+d----          11/21/2026 12:45 PM                DeepSeek v4.1 C盘清理专家
+-a---          11/21/2026 12:45 PM       29435400 DeepSeek-v4.1-CDrive-Cleaner.zip
 
     Directory: D:\a\DeepSeek-CDrive-Cleaner\DeepSeek-CDrive-Cleaner\release\DeepSeek v4.1 C盘清理专家
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d----          11/21/2026 11:27 AM                源码
-d----          11/21/2026 11:27 AM                界面预览
--a---          11/21/2026 11:27 AM       28056783 DeepSeek v4.1 C盘清理专家.exe
--a---          11/21/2026  5:59 PM           2367 使用说明.txt
--a---          11/21/2026 11:27 AM            207 文件校验.txt
--a---          11/21/2026  7:23 PM           1906 更新说明-界面优化.txt
--a---          11/21/2026  7:23 PM           1415 软件介绍.md
+d----          11/21/2026 12:45 PM                源码
+d----          11/21/2026 12:45 PM                界面预览
+-a---          11/21/2026 12:45 PM       27842398 DeepSeek v4.1 C盘清理专家.exe
+-a---          11/21/2026  8:43 PM           2431 使用说明.txt
+-a---          11/21/2026 12:45 PM            207 文件校验.txt
+-a---          11/21/2026  8:43 PM           1813 更新说明-界面优化.txt
+-a---          11/21/2026  8:43 PM           1426 软件介绍.md
 
     Directory: D:\a\DeepSeek-CDrive-Cleaner\DeepSeek-CDrive-Cleaner\release\DeepSeek v4.1 C盘清理专家\源码
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d----          11/21/2026 11:27 AM                DeepSeekCleaner
--a---          11/21/2026  5:59 PM             40 requirements-dev.txt
--a---          11/21/2026  5:59 PM           2419 源码说明.md
+d----          11/21/2026 12:45 PM                DeepSeekCleaner
+-a---          11/21/2026  8:42 PM             40 requirements-dev.txt
+-a---          11/21/2026  8:43 PM           1746 源码说明.md
 
     Directory: D:\a\DeepSeek-CDrive-Cleaner\DeepSeek-CDrive-Cleaner\release\DeepSeek v4.1 C盘清理专家\源码\DeepSeekCleaner
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d----          11/21/2026 11:27 AM                assets
-d----          11/21/2026 11:27 AM                ui
+d----          11/21/2026 12:45 PM                assets
+d----          11/21/2026 12:45 PM                ui
 -a---          11/21/2026  4:53 PM           3300 app_settings.py
 -a---          11/21/2026  2:04 PM           1521 app.manifest
 -a---          11/21/2026  2:23 PM           3266 build_win.spec
@@ -85,44 +85,44 @@ d----          11/21/2026 11:27 AM                ui
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a---          11/21/2026  2:01 PM          71366 app_icon.ico
--a---          11/21/2026  2:01 PM         227331 app_icon.png
--a---          11/21/2026  2:01 PM          15574 icon_128.png
--a---          11/21/2026  2:01 PM            845 icon_16.png
--a---          11/21/2026  2:01 PM           1476 icon_24.png
--a---          11/21/2026  2:01 PM          40639 icon_256.png
--a---          11/21/2026  2:01 PM           2291 icon_32.png
--a---          11/21/2026  2:01 PM           4181 icon_48.png
--a---          11/21/2026  2:01 PM           6242 icon_64.png
+-a---          11/21/2026  8:31 PM          35576 app_icon.ico
+-a---          11/21/2026  8:31 PM         131341 app_icon.png
+-a---          11/21/2026  8:31 PM           7703 icon_128.png
+-a---          11/21/2026  8:31 PM            488 icon_16.png
+-a---          11/21/2026  8:31 PM            782 icon_24.png
+-a---          11/21/2026  8:31 PM          19521 icon_256.png
+-a---          11/21/2026  8:31 PM           1139 icon_32.png
+-a---          11/21/2026  8:31 PM           1960 icon_48.png
+-a---          11/21/2026  8:31 PM           2887 icon_64.png
 
     Directory: D:\a\DeepSeek-CDrive-Cleaner\DeepSeek-CDrive-Cleaner\release\DeepSeek v4.1 C盘清理专家\源码\DeepSeekCleaner\ui
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a---          11/21/2026  5:52 PM          34723 clean_page.py
--a---          11/21/2026  7:22 PM          18883 components.py
--a---          11/21/2026  4:50 PM          15714 dashboard.py
--a---          11/21/2026  7:22 PM          29056 files_page.py
--a---          11/21/2026  7:22 PM          58995 glass.py
--a---          11/21/2026  5:02 PM          14164 history_page.py
--a---          11/21/2026  7:22 PM          13719 icons.py
--a---          11/21/2026  4:52 PM          48408 main_window.py
--a---          11/21/2026  4:54 PM          16171 settings_page.py
--a---          11/21/2026  7:22 PM          20651 sidebar.py
--a---          11/21/2026  7:24 PM          12731 theme.py
+-a---          11/21/2026  7:56 PM          33048 clean_page.py
+-a---          11/21/2026  8:39 PM          17314 components.py
+-a---          11/21/2026  8:04 PM          15340 dashboard.py
+-a---          11/21/2026  8:39 PM          30920 files_page.py
+-a---          11/21/2026  8:37 PM          50894 glass.py
+-a---          11/21/2026  7:48 PM          14058 history_page.py
+-a---          11/21/2026  8:32 PM          11852 icons.py
+-a---          11/21/2026  8:39 PM          47069 main_window.py
+-a---          11/21/2026  7:58 PM          15994 settings_page.py
+-a---          11/21/2026  8:36 PM          17965 sidebar.py
+-a---          11/21/2026  8:36 PM          12667 theme.py
 
     Directory: D:\a\DeepSeek-CDrive-Cleaner\DeepSeek-CDrive-Cleaner\release\DeepSeek v4.1 C盘清理专家\界面预览
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a---          11/21/2026  7:23 PM         963727 01-仪表盘-深色.png
--a---          11/21/2026  7:24 PM        1039647 02-垃圾清理-深色.png
--a---          11/21/2026  7:24 PM         785241 03-大文件体检-深色.png
--a---          11/21/2026  7:24 PM         883203 04-清理记录-深色.png
--a---          11/21/2026  7:24 PM        1033632 05-设置-深色.png
--a---          11/21/2026  7:24 PM         768615 06-仪表盘-浅色.png
--a---          11/21/2026  7:24 PM         864547 07-垃圾清理-浅色.png
--a---          11/21/2026  7:24 PM         603501 08-大文件体检-浅色.png
--a---          11/21/2026  7:24 PM         684504 09-清理记录-浅色.png
--a---          11/21/2026  7:24 PM         847474 10-设置-浅色.png
+-a---          11/21/2026  8:42 PM         172624 01-仪表盘-深色.png
+-a---          11/21/2026  8:42 PM         201182 02-垃圾清理-深色.png
+-a---          11/21/2026  8:42 PM         110511 03-大文件体检-深色.png
+-a---          11/21/2026  8:42 PM         114873 04-清理记录-深色.png
+-a---          11/21/2026  8:42 PM         186262 05-设置-深色.png
+-a---          11/21/2026  8:42 PM         170147 06-仪表盘-浅色.png
+-a---          11/21/2026  8:42 PM         195851 07-垃圾清理-浅色.png
+-a---          11/21/2026  8:42 PM         106786 08-大文件体检-浅色.png
+-a---          11/21/2026  8:42 PM         112285 09-清理记录-浅色.png
+-a---          11/21/2026  8:42 PM         186189 10-设置-浅色.png
 
