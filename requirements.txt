@@ -1,0 +1,5 @@
+PySide6-Essentials==6.8.1
+send2trash==2.2.0
+pystray==0.19.5
+Pillow>=10.0
+pywin32==306; sys_platform == "win32"

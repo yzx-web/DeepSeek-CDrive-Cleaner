@@ -1,0 +1,5 @@
+DeepSeek v4.1 C盘清理专家
+版本：4.1.0
+文件：DeepSeek v4.1 C盘清理专家.exe
+大小：约 26 MB
+SHA-256：35945e66a759d2968c54fe7e7cc10fab023c98e1104b22c579fcdfaf9999a1ac
