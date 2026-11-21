@@ -524,7 +524,7 @@ class AnimatedCounter(QLabel):
 class GlassButton(QAbstractButton):
     """具有真实厚度与按压反馈的玻璃按钮。
 
-    kind: primary / secondary / danger / ghost / quiet
+    kind: primary / cta / secondary / danger / ghost / quiet
     """
 
     def __init__(self, text: str, kind: str = "secondary", icon: Optional[str] = None,
@@ -649,6 +649,12 @@ class GlassButton(QAbstractButton):
         p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
         body = self._body_rect()
+        # iOS 26 风格的按压反馈：整体缩小，而不是只换颜色
+        p.save()
+        press_scale = 1.0 + 0.012 * self._hover - 0.035 * self._press
+        p.translate(body.center())
+        p.scale(press_scale, press_scale)
+        p.translate(-body.center())
         radius = RADIUS["control"]
         path = QPainterPath()
         path.addRoundedRect(body, radius, radius)
@@ -656,13 +662,14 @@ class GlassButton(QAbstractButton):
         if not enabled:
             p.setOpacity(0.42)
         primary = self.kind == "primary"
+        cta = self.kind == "cta"
         danger = self.kind == "danger"
         ghost = self.kind in ("ghost", "quiet")
 
         # 1) 底部外投影：按钮离开桌面，才像实体
         if not ghost:
             shadow = QColor(t.shadow)
-            shadow.setAlpha(int((100 if t.is_dark else 56) * (1 - 0.35 * self._press)))
+            shadow.setAlpha(int((100 if t.is_dark else 56) * (1 + 0.16 * self._hover - 0.35 * self._press)))
             for i in range(4, 0, -1):
                 c = QColor(shadow)
                 c.setAlpha(int(shadow.alpha() * (i / 4) * 0.25))
@@ -674,9 +681,15 @@ class GlassButton(QAbstractButton):
         # 2) 中间渐变：主按钮用 iOS 蓝紫；次级按钮与背景环境色相呼应
         if primary:
             grad = QLinearGradient(body.topLeft(), body.bottomRight())
-            grad.setColorAt(0, QColor("#706CFF"))
-            grad.setColorAt(0.45, QColor("#8059F5"))
-            grad.setColorAt(1, QColor("#C05AF6"))
+            c0 = QColor("#706CFF")
+            c1 = QColor("#8059F5")
+            c2 = QColor("#C05AF6")
+            c0.setAlpha(240)
+            c1.setAlpha(232)
+            c2.setAlpha(226)
+            grad.setColorAt(0, c0)
+            grad.setColorAt(0.45, c1)
+            grad.setColorAt(1, c2)
             p.fillPath(path, grad)
             # 底部紫色厚度
             thickness = QLinearGradient(body.left(), body.bottom() - 8, body.left(), body.bottom())
@@ -686,6 +699,13 @@ class GlassButton(QAbstractButton):
             p.setClipPath(path)
             p.fillRect(QRectF(body.left(), body.bottom() - 10, body.width(), 10), thickness)
             p.restore()
+        elif cta:
+            grad = QLinearGradient(body.topLeft(), body.bottomLeft())
+            top = QColor(255, 255, 255, 248 if t.is_dark else 250)
+            bottom = QColor(244, 240, 255, 244)
+            grad.setColorAt(0, top)
+            grad.setColorAt(1, bottom)
+            p.fillPath(path, grad)
         elif danger:
             p.fillPath(path, QColor(255, 69, 58, 34 if t.is_dark else 20))
         elif ghost:
@@ -701,11 +721,29 @@ class GlassButton(QAbstractButton):
             grad.setColorAt(1, base_bottom)
             p.fillPath(path, grad)
 
+        # 2.5) 内底阴影与左上反光：让玻璃看起来有厚度、放在桌面上
+        p.save()
+        p.setClipPath(path)
+        inner = QLinearGradient(body.left(), body.bottom() - body.height() * 0.34,
+                                body.left(), body.bottom())
+        inner.setColorAt(0, QColor(22, 12, 42, 0))
+        base_alpha = 118 if primary else (44 if cta else (62 if t.is_dark else 34))
+        inner.setColorAt(1, QColor(22, 12, 42, base_alpha))
+        p.fillRect(QRectF(body.left(), body.bottom() - body.height() * 0.36,
+                          body.width(), body.height() * 0.36), inner)
+        bloom = QRadialGradient(QPointF(body.left() + body.width() * 0.2, body.top() + 4),
+                                max(34.0, body.width() * 0.55))
+        bloom.setColorAt(0, QColor(255, 255, 255, 84 if primary else (110 if cta else 54)))
+        bloom.setColorAt(0.35, QColor(255, 255, 255, 26 if primary else (38 if cta else 14)))
+        bloom.setColorAt(1, QColor(255, 255, 255, 0))
+        p.fillRect(body, bloom)
+        p.restore()
+
         # 3) 顶部高光：左上宽、右下窄，像光从左上照到玻璃
         p.save()
         p.setClipPath(path)
         gloss = QLinearGradient(body.topLeft(), QPointF(body.left(), body.top() + body.height() * 0.55))
-        gloss.setColorAt(0, QColor(255, 255, 255, 98 if primary else (62 if t.is_dark else 120)))
+        gloss.setColorAt(0, QColor(255, 255, 255, 98 if primary else (160 if cta else (62 if t.is_dark else 120))))
         gloss.setColorAt(0.5, QColor(255, 255, 255, 24 if primary else 20))
         gloss.setColorAt(1, QColor(255, 255, 255, 0))
         p.fillRect(QRectF(body.left(), body.top(), body.width(), body.height() * 0.58), gloss)
@@ -736,6 +774,8 @@ class GlassButton(QAbstractButton):
         border = QColor(255, 255, 255, 150 if t.is_dark else 205) if not danger else QColor(t.coral)
         if primary:
             border = QColor(255, 255, 255, 138)
+        if cta:
+            border = QColor(255, 255, 255, 230)
         p.setPen(QPen(border, 1.1 if not danger else 1.3))
         p.setBrush(Qt.BrushStyle.NoBrush)
         p.drawPath(path)
@@ -746,6 +786,8 @@ class GlassButton(QAbstractButton):
 
         # 5) 文本与图标
         text_color = QColor("#FFFFFF") if primary else (t.coral if danger else t.text)
+        if cta:
+            text_color = QColor(t.accent)
         if ghost:
             text_color = QColor(t.subtext)
         if not enabled:
@@ -761,10 +803,15 @@ class GlassButton(QAbstractButton):
             draw_glyph(p, self.icon_name, icon_rect, text_color, 1.8)
             start_x += icon_size + 9
         p.setFont(self.font())
+        if primary:
+            p.setPen(QColor(28, 16, 62, 92))
+            p.drawText(QRectF(start_x, body.top() + 0.8, text_w + 4, body.height()),
+                       int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter), self._text)
         p.setPen(text_color)
         p.drawText(QRectF(start_x, body.top(), text_w + 4, body.height()),
                    int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter), self._text)
         p.setOpacity(1)
+        p.restore()
         p.end()
 
 

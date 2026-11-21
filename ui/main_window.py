@@ -278,6 +278,7 @@ class MainWindow(QWidget):
         self.sidebar = Sidebar(self.shell)
         self.sidebar.nav_changed.connect(self.navigate)
         self.sidebar.quit_requested.connect(self._confirm_quit)
+        self.sidebar.scan_requested.connect(lambda: self.start_scan("cleaner"))
         self.shell_layout.addWidget(self.sidebar)
 
         content = QWidget(self.shell)
@@ -339,6 +340,7 @@ class MainWindow(QWidget):
         self.settings_page.reset_requested.connect(self._confirm_reset)
 
         self.pages.setCurrentWidget(self.dashboard)
+        self.sidebar.space_card.set_stats(self.dashboard.disk)
 
     def _resource(self, rel: str) -> Path:
         base = getattr(sys, "_MEIPASS", None)
@@ -361,6 +363,7 @@ class MainWindow(QWidget):
         self.pages.switch_to(self.page_map[key], forward)
         if key == "dashboard":
             self.dashboard.refresh_stats()
+            self.sidebar.space_card.set_stats(self.dashboard.disk)
         elif key == "history":
             self.history_page.refresh()
         elif key == "settings":
@@ -397,6 +400,7 @@ class MainWindow(QWidget):
         self.clean_page.on_scan_finished(result)
         self.files_page.on_scan_finished(result)
         self.dashboard.set_scan_result(result)
+        self.sidebar.space_card.set_stats(result.disk)
         if result.errors:
             self.show_toast("有些系统角落需要管理员权限，已自动跳过；其余清理不受影响。", 4200)
         self.settings_page.refresh_permissions()
@@ -579,6 +583,7 @@ class MainWindow(QWidget):
         self.clean_page.on_clean_completed(result)
         self.files_page.on_clean_completed()
         self.dashboard.refresh_stats()
+        self.sidebar.space_card.set_stats(self.dashboard.disk)
         self.history_page.refresh()
         QTimer.singleShot(240, lambda: self._show_completion(result))
 
@@ -903,6 +908,7 @@ class MainWindow(QWidget):
         self.clean_page.set_scan_result(result)
         self.files_page.set_scan_result(result)
         self.dashboard.set_scan_result(result)
+        self.sidebar.space_card.set_stats(result.disk)
         self.history_page.refresh()
 
     def window_action(self, kind: str) -> None:

@@ -16,7 +16,7 @@ from pathlib import Path
 from scanner import CATEGORY_MAP
 from ui.components import PageHeader, StatusPill, Tag
 from ui.glass import EmptyState, GlassButton, GlassCard, Label, draw_glass
-from ui.files_page import FilterChip, FilterGroup, FilterSection
+from ui.files_page import FilterGroup, InlineFilterBar
 from ui.icons import Glyph
 from ui.theme import ThemeManager, app_font, category_color
 
@@ -166,66 +166,28 @@ class HistoryPage(QWidget):
         self.header.add_right(self.export_btn)
         root.addWidget(self.header)
 
-        body = QHBoxLayout()
+        body = QVBoxLayout()
         body.setContentsMargins(0, 0, 0, 0)
-        body.setSpacing(16)
+        body.setSpacing(10)
         root.addLayout(body, 1)
 
-        self.filter_panel = GlassCard(self, radius=16, padding=14, shadow=True)
-        self.filter_panel.setFixedWidth(224)
-        self.filter_panel.layout_.setSpacing(2)
-        fh = QHBoxLayout()
-        fh.addWidget(Label("筛选", 14, QFont.Weight.DemiBold, parent=self.filter_panel))
-        fh.addStretch(1)
-        reset = QLabel("重置", self.filter_panel)
-        reset.setFont(app_font(9, QFont.Weight.DemiBold))
-        reset.setStyleSheet(f"color: {self.tm.theme.accent.name()}; background: transparent;")
-        reset.setCursor(Qt.CursorShape.PointingHandCursor)
-        reset.mousePressEvent = lambda e: self._reset()  # type: ignore[assignment]
-        fh.addWidget(reset)
-        self.filter_panel.layout_.addLayout(fh)
-        self.filter_panel.layout_.addWidget(Label("把某一次记忆找出来。", 9,
-                                                 color=self.tm.theme.faint,
-                                                 parent=self.filter_panel))
-        self.filter_panel.layout_.addSpacing(6)
-
-        cat_content = QWidget(self.filter_panel)
-        cl = QVBoxLayout(cat_content)
-        cl.setContentsMargins(0, 0, 0, 8)
         self.cat_group = FilterGroup([("all", "全部"), ("temp", "临时"), ("browser", "浏览器"),
-                                      ("logs", "日志"), ("update", "更新")], "all", 2, cat_content)
+                                      ("logs", "日志"), ("update", "更新")], "all", 5, self)
         self.cat_group.changed.connect(lambda k: self._on_filter("cat", k))
-        cl.addWidget(self.cat_group)
-        sec1 = FilterSection("类别", "全部", cat_content, True, self.filter_panel)
-        self.filter_panel.layout_.addWidget(sec1)
-
-        date_content = QWidget(self.filter_panel)
-        dl = QVBoxLayout(date_content)
-        dl.setContentsMargins(0, 0, 0, 8)
         self.date_group = FilterGroup([("all", "全部"), ("7", "近 7 天"),
-                                       ("30", "近 30 天"), ("90", "近 90 天")], "all", 2, date_content)
+                                       ("30", "近 30 天"), ("90", "近 90 天")], "all", 4, self)
         self.date_group.changed.connect(lambda k: self._on_filter("date", k))
-        dl.addWidget(self.date_group)
-        sec2 = FilterSection("日期", "全部", date_content, False, self.filter_panel)
-        self.filter_panel.layout_.addWidget(sec2)
-
-        size_content = QWidget(self.filter_panel)
-        sl = QVBoxLayout(size_content)
-        sl.setContentsMargins(0, 0, 0, 8)
         self.size_group = FilterGroup([("all", "全部"), ("s", "小于 1G"),
-                                       ("m", "1–5G"), ("l", "5G 以上")], "all", 2, size_content)
+                                       ("m", "1–5G"), ("l", "5G 以上")], "all", 4, self)
         self.size_group.changed.connect(lambda k: self._on_filter("size", k))
-        sl.addWidget(self.size_group)
-        sec3 = FilterSection("释放大小", "全部", size_content, False, self.filter_panel)
-        self.filter_panel.layout_.addWidget(sec3)
-        self.filter_panel.layout_.addStretch(1)
-        self.count_hint = Label("0 条记录", 9, color=self.tm.theme.faint, parent=self.filter_panel)
-        self.filter_panel.layout_.addWidget(self.count_hint)
-        body.addWidget(self.filter_panel)
+        self.filter_bar = InlineFilterBar([
+            ("类别", self.cat_group), ("日期", self.date_group), ("释放大小", self.size_group),
+        ], self._reset, self)
+        body.addWidget(self.filter_bar)
 
         right = QVBoxLayout()
         right.setContentsMargins(0, 0, 0, 0)
-        right.setSpacing(12)
+        right.setSpacing(10)
         body.addLayout(right, 1)
 
         self.overview = GlassCard(self, radius=16, padding=18, glow=True)
@@ -321,9 +283,10 @@ class HistoryPage(QWidget):
         self.ov_total.setText(human_size(total))
         self.ov_count.setText(f"{count} 次")
         self.ov_avg.setText(human_size(avg))
-        self.count_hint.setText(f"{len(self.filtered)} 条记录")
-        self.filter_note.setText("全部记录" if len(self.filtered) == len(self.records)
-                                 else f"筛选出 {len(self.filtered)} 条")
+        if len(self.filtered) == len(self.records):
+            self.filter_note.setText(f"全部记录 · {len(self.filtered)} 条")
+        else:
+            self.filter_note.setText(f"筛选出 {len(self.filtered)} 条")
         self.export_btn.setEnabled(bool(self.records))
 
     def _rebuild_rows(self) -> None:

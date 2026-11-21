@@ -77,13 +77,13 @@ class FilterChip(QAbstractButton):  # type: ignore[no-redef]
         self._anim = QPropertyAnimation(self, b"hoverAmount", self)
         self._anim.setDuration(130)
         fm = QFontMetrics(self.font())
-        self.setFixedSize(fm.horizontalAdvance(text) + 22, 28)
+        self.setFixedSize(fm.horizontalAdvance(text) + 18, 28)
         self.tm.changed.connect(self.update)
 
     def setText(self, text: str) -> None:  # noqa: N802
         self._text = text
         fm = QFontMetrics(self.font())
-        self.setFixedSize(fm.horizontalAdvance(text) + 22, 28)
+        self.setFixedSize(fm.horizontalAdvance(text) + 18, 28)
         self.update()
 
     def get_hover(self) -> float:
@@ -133,7 +133,7 @@ class FilterGroup(QWidget):
         self.current = current
         grid = QGridLayout(self)
         grid.setContentsMargins(0, 0, 0, 0)
-        grid.setHorizontalSpacing(6)
+        grid.setHorizontalSpacing(4)
         grid.setVerticalSpacing(6)
         self.chips: Dict[str, FilterChip] = {}
         for i, (key, text) in enumerate(options):
@@ -151,6 +151,42 @@ class FilterGroup(QWidget):
         for k, chip in self.chips.items():
             chip.setChecked(k == key)
         self.changed.emit(key)
+
+
+class InlineFilterBar(GlassCard):
+    """横向筛选条：把筛选从高高的左栏变成一条轻量工具条。"""
+
+    def __init__(self, groups: List[Tuple[str, "FilterGroup"]], reset_cb,
+                 parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent, radius=14, padding=10, shadow=True)
+        self.tm = ThemeManager.instance()
+        self.setFixedHeight(70)
+        self.layout_.setSpacing(0)
+        row = QHBoxLayout()
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(16)
+        for index, (title, group) in enumerate(groups):
+            col = QVBoxLayout()
+            col.setContentsMargins(0, 0, 0, 0)
+            col.setSpacing(3)
+            cap = Label(title, 9, QFont.Weight.DemiBold, color=self.tm.theme.faint, parent=self)
+            col.addWidget(cap)
+            col.addWidget(group)
+            if index:
+                divider = QWidget(self)
+                divider.setFixedWidth(1)
+                divider.setStyleSheet(f"background: {self.tm.theme.divider.name()};")
+                divider.setFixedHeight(38)
+                row.addWidget(divider, 0, Qt.AlignmentFlag.AlignVCenter)
+            row.addLayout(col)
+        row.addStretch(1)
+        reset = QLabel("重置", self)
+        reset.setFont(app_font(9, QFont.Weight.DemiBold))
+        reset.setStyleSheet(f"color: {self.tm.theme.accent.name()}; background: transparent;")
+        reset.setCursor(Qt.CursorShape.PointingHandCursor)
+        reset.mousePressEvent = lambda e: reset_cb()  # type: ignore[assignment]
+        row.addWidget(reset, 0, Qt.AlignmentFlag.AlignBottom)
+        self.layout_.addLayout(row)
 
 
 class FilterSection(QWidget):
@@ -332,69 +368,28 @@ class BigFilesPage(QWidget):
         self.header.add_right(self.health)
         root.addWidget(self.header)
 
-        body = QHBoxLayout()
+        body = QVBoxLayout()
         body.setContentsMargins(0, 0, 0, 0)
-        body.setSpacing(16)
+        body.setSpacing(10)
         root.addLayout(body, 1)
 
-        self.filter_panel = GlassCard(self, radius=16, padding=14, shadow=True)
-        self.filter_panel.setFixedWidth(224)
-        self.filter_panel.layout_.setSpacing(2)
-        fh = QHBoxLayout()
-        fh.addWidget(Label("筛选", 14, QFont.Weight.DemiBold, parent=self.filter_panel))
-        fh.addStretch(1)
-        reset = QLabel("重置", self.filter_panel)
-        reset.setFont(app_font(9, QFont.Weight.DemiBold))
-        reset.setStyleSheet(f"color: {self.tm.theme.accent.name()}; background: transparent;")
-        reset.setCursor(Qt.CursorShape.PointingHandCursor)
-        reset.mousePressEvent = lambda e: self._reset_filters()  # type: ignore[assignment]
-        fh.addWidget(reset)
-        self.filter_panel.layout_.addLayout(fh)
-        self.filter_panel.layout_.addWidget(Label("按类别、时间与体积缩小范围。", 9,
-                                                 color=self.tm.theme.faint,
-                                                 parent=self.filter_panel))
-        self.filter_panel.layout_.addSpacing(6)
-
-        type_content = QWidget(self.filter_panel)
-        type_layout = QVBoxLayout(type_content)
-        type_layout.setContentsMargins(0, 0, 0, 8)
         self.type_group = FilterGroup([("all", "全部"), ("video", "视频"), ("archive", "压缩包"),
-                                       ("disk", "磁盘映像"), ("other", "其他")], "all", 2, type_content)
+                                       ("disk", "磁盘映像"), ("other", "其他")], "all", 5, self)
         self.type_group.changed.connect(lambda k: self._on_filter("type", k))
-        type_layout.addWidget(self.type_group)
-        sec1 = FilterSection("类别", "全部", type_content, True, self.filter_panel)
-        self.filter_panel.layout_.addWidget(sec1)
-
-        date_content = QWidget(self.filter_panel)
-        dl = QVBoxLayout(date_content)
-        dl.setContentsMargins(0, 0, 0, 8)
         self.date_group = FilterGroup([("all", "全部"), ("7", "近 7 天"), ("30", "近 30 天"),
-                                       ("90", "近 90 天")], "all", 2, date_content)
+                                       ("90", "近 90 天")], "all", 4, self)
         self.date_group.changed.connect(lambda k: self._on_filter("date", k))
-        dl.addWidget(self.date_group)
-        sec2 = FilterSection("日期", "全部", date_content, False, self.filter_panel)
-        self.filter_panel.layout_.addWidget(sec2)
-
-        size_content = QWidget(self.filter_panel)
-        sl = QVBoxLayout(size_content)
-        sl.setContentsMargins(0, 0, 0, 8)
         self.size_group = FilterGroup([("all", "全部"), ("s", "0.5–1G"), ("m", "1–5G"),
-                                       ("l", "5G 以上")], "all", 2, size_content)
+                                       ("l", "5G 以上")], "all", 4, self)
         self.size_group.changed.connect(lambda k: self._on_filter("size", k))
-        sl.addWidget(self.size_group)
-        sec3 = FilterSection("大小区间", "全部", size_content, False, self.filter_panel)
-        self.filter_panel.layout_.addWidget(sec3)
-        self.filter_panel.layout_.addStretch(1)
-        privacy = QHBoxLayout()
-        privacy.addWidget(Glyph("shield", QColor(self.tm.theme.mint), 13, 1.3, self.filter_panel))
-        privacy.addWidget(Label("文件路径不会离开本机", 9, color=self.tm.theme.faint,
-                                parent=self.filter_panel))
-        self.filter_panel.layout_.addLayout(privacy)
-        body.addWidget(self.filter_panel)
+        self.filter_bar = InlineFilterBar([
+            ("类别", self.type_group), ("日期", self.date_group), ("大小区间", self.size_group),
+        ], self._reset_filters, self)
+        body.addWidget(self.filter_bar)
 
         right = QVBoxLayout()
         right.setContentsMargins(0, 0, 0, 0)
-        right.setSpacing(12)
+        right.setSpacing(10)
         body.addLayout(right, 1)
 
         self.topbar = GlassCard(self, radius=14, padding=12, shadow=False)

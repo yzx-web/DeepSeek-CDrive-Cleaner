@@ -27,19 +27,30 @@ class PageHeader(QWidget):
         root.setSpacing(16)
         left = QVBoxLayout()
         left.setContentsMargins(0, 0, 0, 0)
-        left.setSpacing(5)
+        left.setSpacing(4)
+        self.eyebrow_label: Optional[QLabel] = None
+        self.eyebrow_rule: Optional[QLabel] = None
         if eyebrow:
-            e = QLabel(eyebrow.upper(), self)
-            e.setFont(app_font(10, QFont.Weight.DemiBold))
-            e.setStyleSheet(f"color: {self.tm.theme.faint.name()}; background: transparent;"
-                            "letter-spacing: 1.5px;")
-            left.addWidget(e)
+            eyebrow_row = QHBoxLayout()
+            eyebrow_row.setContentsMargins(0, 0, 0, 0)
+            eyebrow_row.setSpacing(7)
+            self.eyebrow_rule = QLabel(self)
+            self.eyebrow_rule.setFixedSize(18, 2)
+            eyebrow_row.addWidget(self.eyebrow_rule)
+            self.eyebrow_label = QLabel(eyebrow.upper(), self)
+            self.eyebrow_label.setFont(app_font(9, QFont.Weight.Bold))
+            self.eyebrow_label.setStyleSheet("background: transparent; letter-spacing: 1.7px;")
+            eyebrow_row.addWidget(self.eyebrow_label)
+            eyebrow_row.addStretch(1)
+            left.addLayout(eyebrow_row)
+            self.tm.changed.connect(self._sync_eyebrow)
+            self._sync_eyebrow()
         self.title = Label(title, 28, QFont.Weight.Bold, parent=self, display=True)
         self.title.setStyleSheet(self.title.styleSheet() + "letter-spacing: -0.4px;")
         left.addWidget(self.title)
         self.subtitle = Label(subtitle, 12, QFont.Weight.Normal,
                               color=self.tm.theme.muted, parent=self)
-        self.subtitle.setMaximumWidth(780)
+        self.subtitle.setMaximumWidth(820)
         left.addWidget(self.subtitle)
         root.addLayout(left, 1)
         self.right = QHBoxLayout()
@@ -47,6 +58,20 @@ class PageHeader(QWidget):
         self.right.setSpacing(8)
         self.right.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
         root.addLayout(self.right)
+
+    def _sync_eyebrow(self, *_args) -> None:
+        accent = self.tm.theme.accent
+        if self.eyebrow_rule is not None:
+            self.eyebrow_rule.setStyleSheet(
+                f"background: rgba({accent.red()},{accent.green()},{accent.blue()},190);"
+                "border-radius: 1px;")
+        if self.eyebrow_label is not None:
+            self.eyebrow_label.setStyleSheet(
+                f"color: {accent.name()}; background: transparent; letter-spacing: 1.7px;")
+
+    def set_eyebrow(self, text: str) -> None:
+        if self.eyebrow_label is not None:
+            self.eyebrow_label.setText(text.upper())
 
     def set_texts(self, title: str, subtitle: str) -> None:
         self.title.setText(title)

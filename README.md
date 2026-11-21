@@ -6,7 +6,9 @@
 
 **先看清，再决定。删错了，还能从回收站拿回来。**
 
-Windows 10 / 11 64 位 · 免安装单文件 · 约 26 MB
+**界面优化版 · iOS 26 风格玻璃按钮与分类色卡片**
+
+Windows 10 / 11 64 位 · 免安装单文件 · 约 26.8 MB
 
 **由 DeepSeek v4.1 Flash Max 制作**
 
@@ -62,7 +64,7 @@ Windows 10 / 11 64 位 · 免安装单文件 · 约 26 MB
 
 > **SmartScreen 提示**：程序未做商业代码签名，首次运行如遇“未知发布者”，点“更多信息”→“仍要运行”。这是 Windows 对未签名 exe 的常规提示。
 >
-> **SHA-256**：`36c4921c2d0def64b0c145595b2f9f79472c1567325a72c2a75a96e3c8dba6b0`
+> **SHA-256**：`b13786417b0a53760becef2311fb25dcdcc43cb5248049b99641fe298087a020`
 
 ## 30 秒了解
 
@@ -166,7 +168,7 @@ app.manifest         asInvoker + PerMonitorV2 清单
 
 - Windows 10 / 11 64 位
 - 不需要 .NET、Node.js 或单独安装 Qt
-- 单文件 exe，约 26 MB
+- 单文件 exe，约 26.8 MB
 - 中文界面
 
 ## 已知说明
