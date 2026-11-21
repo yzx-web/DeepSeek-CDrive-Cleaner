@@ -1,0 +1,129 @@
+name: Build Windows package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download build payload
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://aka.doubaocdn.com/s/xUXURSYpkb" -OutFile "payload.zip"
+
+      - name: Extract payload
+        shell: pwsh
+        run: Expand-Archive -Path "payload.zip" -DestinationPath "payload" -Force
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r "payload/source/DeepSeekCleaner/requirements.txt"
+          python -m pip install "pyinstaller==6.16.0"
+
+      - name: Build Windows executable
+        shell: pwsh
+        working-directory: payload/source/DeepSeekCleaner
+        run: pyinstaller --noconfirm --clean build_win.spec
+
+      - name: Assemble release folder
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $work = Join-Path $env:GITHUB_WORKSPACE "release"
+          $folderName = "DeepSeek v4.1 C盘清理专家"
+          $folder = Join-Path $work $folderName
+          New-Item -ItemType Directory -Force -Path $folder | Out-Null
+          New-Item -ItemType Directory -Force -Path (Join-Path $folder "界面预览") | Out-Null
+          New-Item -ItemType Directory -Force -Path (Join-Path $folder "源码") | Out-Null
+
+          $exe = Join-Path $env:GITHUB_WORKSPACE "payload/source/DeepSeekCleaner/dist/DeepSeekCleaner.exe"
+          Copy-Item $exe (Join-Path $folder "DeepSeek v4.1 C盘清理专家.exe")
+
+          Copy-Item "payload/docs/使用说明.txt" $folder
+          Copy-Item "payload/docs/更新说明-界面优化.txt" $folder
+          Copy-Item "payload/docs/软件介绍.md" $folder
+          Copy-Item "payload/docs/源码说明.md" (Join-Path $folder "源码")
+          Copy-Item "payload/docs/requirements-dev.txt" (Join-Path $folder "源码")
+
+          Copy-Item "payload/previews/*.png" (Join-Path $folder "界面预览")
+          Copy-Item "payload/source/DeepSeekCleaner" (Join-Path $folder "源码/DeepSeekCleaner") -Recurse
+
+          $appExe = Join-Path $folder "DeepSeek v4.1 C盘清理专家.exe"
+          $hash = (Get-FileHash $appExe -Algorithm SHA256).Hash.ToLower()
+          $bytes = (Get-Item $appExe).Length
+          $mb = "{0:N1} MB" -f ($bytes / 1MB)
+          @(
+            "DeepSeek v4.1 C盘清理专家"
+            "版本：4.1.0"
+            "文件：DeepSeek v4.1 C盘清理专家.exe"
+            "大小：$mb（$bytes bytes）"
+            "SHA-256：$hash"
+          ) | Set-Content (Join-Path $folder "文件校验.txt") -Encoding utf8
+
+          $zip = Join-Path $work "DeepSeek-v4.1-CDrive-Cleaner.zip"
+          tar.exe -a -c -f $zip -C $work $folderName
+
+          "SHA256=$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "APP_SIZE=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_ZIP=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeepSeek-v4.1-CDrive-Cleaner
+          path: release/DeepSeek-v4.1-CDrive-Cleaner.zip
+          retention-days: 7
+
+      - name: Update GitHub Release asset
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload v4.1.0 "$RELEASE_ZIP" --clobber
+          gh release edit v4.1.0 --notes-file payload/RELEASE_NOTES.md
+
+      - name: Sync source previews and README back to repository
+        shell: bash
+        run: |
+          set -e
+          cp -R payload/source/DeepSeekCleaner/* .
+          mkdir -p docs/images
+          cp payload/previews/01-*.png docs/images/dashboard.png
+          cp payload/previews/02-*.png docs/images/cleaner.png
+          cp payload/previews/03-*.png docs/images/files.png
+          cp payload/previews/04-*.png docs/images/history.png
+          cp payload/previews/05-*.png docs/images/settings.png
+          cp payload/previews/06-*.png docs/images/dashboard-light.png
+          cp payload/previews/07-*.png docs/images/cleaner-light.png
+          cp payload/previews/08-*.png docs/images/files-light.png
+          cp payload/previews/09-*.png docs/images/history-light.png
+          cp payload/previews/10-*.png docs/images/settings-light.png
+          sed -e "s/__SHA256__/${SHA256}/g" -e "s/__SIZE__/${APP_SIZE}/g" payload/README.template.md > README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md app.manifest app_settings.py assets build_win.spec cleaner.py main.py report.py requirements.txt scanner.py system_utils.py ui version_info.txt docs
+          if git diff --cached --quiet; then
+            echo "No repository changes to commit"
+          else
+            git commit -m "[auto-assets] Sync UI source, previews and README"
+            git push
+          fi
