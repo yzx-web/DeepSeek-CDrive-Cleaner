@@ -39,6 +39,27 @@ jobs:
           python -m pip install "pyinstaller==6.16.0"
           python -c "import PySide6, PyInstaller; print('PySide6', PySide6.__version__, 'PyInstaller', PyInstaller.__version__)"
 
+      - name: Legacy cleanup smoke test
+        shell: pwsh
+        working-directory: payload/source/DeepSeekCleaner
+        run: |
+          $fake = Join-Path $env:TEMP "C盘清理专家5代.exe"
+          Copy-Item "$env:SystemRoot\System32\ping.exe" $fake -Force
+          Start-Process -FilePath $fake -ArgumentList "127.0.0.1", "-n", "30" | Out-Null
+          Start-Sleep -Seconds 1
+          @'
+          from legacy_cleanup import running_legacy_processes, terminate_legacy_processes
+          found = running_legacy_processes()
+          print("found", found)
+          assert found, "legacy process not detected"
+          killed = terminate_legacy_processes()
+          print("killed", killed)
+          assert not running_legacy_processes(), "legacy process still running"
+          '@ | Set-Content "_legacy_smoke.py" -Encoding utf8
+          python "_legacy_smoke.py"
+          Remove-Item "_legacy_smoke.py" -Force -ErrorAction SilentlyContinue
+          Remove-Item $fake -Force -ErrorAction SilentlyContinue
+
       - name: Build executable
         shell: pwsh
         working-directory: payload/source/DeepSeekCleaner
@@ -50,12 +71,16 @@ jobs:
         shell: pwsh
         run: |
           $exe = Join-Path $env:GITHUB_WORKSPACE "payload/source/DeepSeekCleaner/dist/DeepSeekCleaner.exe"
-          $p = Start-Process -FilePath $exe -ArgumentList "--selftest" -Wait -PassThru
           $report = Join-Path $env:APPDATA "DeepSeekCleaner/selftest.json"
+          Remove-Item $report -Force -ErrorAction SilentlyContinue
+          $p = Start-Process -FilePath $exe -ArgumentList "--selftest" -Wait -PassThru
           if (-not (Test-Path $report)) { throw "selftest.json not found" }
           Get-Content $report
           $json = Get-Content $report -Raw | ConvertFrom-Json
           if (-not $json.ok) { throw "selftest failed: $($json.error)" }
+          if ($json.app -ne "C盘清理专家 最终版") { throw "unexpected app name: $($json.app)" }
+          if ($json.version -ne "8.0.0") { throw "unexpected version: $($json.version)" }
+          if ($json.categories -ne 8) { throw "unexpected categories: $($json.categories)" }
           if ($p.ExitCode -ne 0) { throw "selftest exit code $($p.ExitCode)" }
 
       - name: Assemble release
@@ -63,16 +88,16 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $work = Join-Path $env:GITHUB_WORKSPACE "release"
-          $folderName = "DeepSeek v4.1 C盘清理专家"
+          $folderName = "C盘清理专家 最终版"
           $folder = Join-Path $work $folderName
           New-Item -ItemType Directory -Force -Path $folder | Out-Null
           New-Item -ItemType Directory -Force -Path (Join-Path $folder "界面预览") | Out-Null
           New-Item -ItemType Directory -Force -Path (Join-Path $folder "源码") | Out-Null
 
           $exe = Join-Path $env:GITHUB_WORKSPACE "payload/source/DeepSeekCleaner/dist/DeepSeekCleaner.exe"
-          Copy-Item $exe (Join-Path $folder "DeepSeek v4.1 C盘清理专家.exe")
+          Copy-Item $exe (Join-Path $folder "C盘清理专家最终版.exe")
           Copy-Item "payload/docs/使用说明.txt" $folder
-          Copy-Item "payload/docs/更新说明-界面优化.txt" $folder
+          Copy-Item "payload/docs/更新说明-最终版.txt" $folder
           Copy-Item "payload/docs/软件介绍.md" $folder
           Copy-Item "payload/docs/源码说明.md" (Join-Path $folder "源码")
           Copy-Item "payload/docs/requirements-dev.txt" (Join-Path $folder "源码")
@@ -82,28 +107,36 @@ jobs:
           Remove-Item (Join-Path $folder "源码/DeepSeekCleaner/build") -Recurse -Force -ErrorAction SilentlyContinue
           Remove-Item (Join-Path $folder "源码/DeepSeekCleaner/dist") -Recurse -Force -ErrorAction SilentlyContinue
 
-          $appExe = Join-Path $folder "DeepSeek v4.1 C盘清理专家.exe"
+          $appExe = Join-Path $folder "C盘清理专家最终版.exe"
           $hash = (Get-FileHash $appExe -Algorithm SHA256).Hash.ToLower()
           $bytes = (Get-Item $appExe).Length
           $mb = "{0:N1} MB" -f ($bytes / 1MB)
           @(
-            "DeepSeek v4.1 C盘清理专家"
-            "版本：4.1.0"
-            "文件：DeepSeek v4.1 C盘清理专家.exe"
+            "C盘清理专家 最终版"
+            "版本：8.0.0"
+            "文件：C盘清理专家最终版.exe"
             "大小：$mb（$bytes bytes）"
             "SHA-256：$hash"
           ) | Set-Content (Join-Path $folder "文件校验.txt") -Encoding utf8
 
-          $zip = Join-Path $work "DeepSeek-v4.1-CDrive-Cleaner.zip"
+          $zip = Join-Path $work "C盘清理专家最终版.zip"
           Compress-Archive -Path $folder -DestinationPath $zip -Force
           "SHA256=$hash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "APP_SIZE=$mb" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "RELEASE_ZIP=$zip" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: C盘清理专家最终版
+          path: payload/source/DeepSeekCleaner/dist/DeepSeekCleaner.exe
+          if-no-files-found: error
 
       - name: Upload release asset
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          gh release delete-asset v4.1.0 "DeepSeek-v4.1-CDrive-Cleaner.zip" -y 2>/dev/null || true
           gh release upload v4.1.0 "$RELEASE_ZIP" --clobber
           gh release edit v4.1.0 --notes-file payload/RELEASE_NOTES.md
