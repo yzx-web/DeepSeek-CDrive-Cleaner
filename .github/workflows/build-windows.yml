@@ -50,10 +50,10 @@ jobs:
           @'
           from legacy_cleanup import running_legacy_processes, terminate_legacy_processes
           found = running_legacy_processes()
-          print("found", found)
+          print("found_count", len(found))
           assert found, "legacy process not detected"
-          killed = terminate_legacy_processes()
-          print("killed", killed)
+          killed_count, killed_names = terminate_legacy_processes()
+          print("killed_count", killed_count)
           assert not running_legacy_processes(), "legacy process still running"
           '@ | Set-Content "_legacy_smoke.py" -Encoding utf8
           python "_legacy_smoke.py"
